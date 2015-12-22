@@ -4,3 +4,4 @@ postgresql:
     - 5432:5432
   environment:
     - POSTGRES_PASS="**ChangeMe**"
+    - PLYO_PASS="**ChangeMe**"
