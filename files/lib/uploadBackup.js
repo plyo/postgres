@@ -3,13 +3,18 @@ const path = require('path');
 const google = require('googleapis');
 const googleAuth = require('google-auth-library');
 
-const googleAPICredentials = require('./google_api_credentials.json');
-const clientSecret = googleAPICredentials.installed.client_secret;
-const clientId = googleAPICredentials.installed.client_id;
-const redirectUrl = googleAPICredentials.installed.redirect_uris[0];
+const clientSecret = process.env.CLIENT_SECRET;
+const clientId = process.env.CLIENT_ID;
+const redirectUrl = "urn:ietf:wg:oauth:2.0:oob";
+
 const auth = new googleAuth();
 const oauth2Client = new auth.OAuth2(clientId, clientSecret, redirectUrl);
-oauth2Client.credentials = require('./google_oauth_credentials.json');
+oauth2Client.credentials = {
+  access_token: process.env.ACCESS_TOKEN,
+  token_type: "Bearer",
+  refresh_token: process.env.REFRESH_TOKEN,
+  expiry_date: process.env.EXPIRY_DATE
+};
 
 const filePath = process.argv[2];
 const drive = google.drive({ version: 'v3', auth: oauth2Client });

@@ -1,13 +1,12 @@
 FROM debian:jessie
 MAINTAINER Andrew Balakirev <balakirev.andrey@gmail.com>
 
-# Install cron, client for PostgreSQL, curl for nodejs installation, jq for JSON modifications
+# Install cron, client for PostgreSQL, curl for nodejs installation
 RUN apt-get update && \
     apt-get install -y \
         cron \
         postgresql-client \
-        curl \
-        jq && \
+        curl && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -25,7 +24,7 @@ RUN set -ex \
   done
 
 ENV NPM_CONFIG_LOGLEVEL info
-ENV NODE_VERSION 4.2.3
+ENV NODE_VERSION 4.2.4
 
 # Install node
 RUN curl -SLO "https://nodejs.org/dist/v$NODE_VERSION/node-v$NODE_VERSION-linux-x64.tar.gz" \
@@ -39,10 +38,8 @@ ADD files/package.json /package.json
 RUN npm install
 
 ADD files/lib/* /
-ADD files/etc/crontab /etc/cron.d/crontab
 
 RUN chmod 755 /*.sh
-RUN chmod 0644 /etc/cron.d/crontab
 RUN touch /var/log/cron.log
 
 CMD ["/start.sh"]
