@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 echo "Saving password for postgres"
-echo "db:5432:*:postgres:$POSTGRES_PASS" > /root/.pgpass
+echo "db:5432:*:postgres:$DB_ENV_POSTGRES_PASS" > /root/.pgpass
+cat /root/.pgpass
 chmod 0600 /root/.pgpass
 
 echo "Preparing crontab"
