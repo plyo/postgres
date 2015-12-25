@@ -15,11 +15,9 @@ ACCESS_TOKEN=$ACCESS_TOKEN
 REFRESH_TOKEN=$REFRESH_TOKEN
 EXPIRY_DATE=$EXPIRY_DATE
 
-# For testing - run every minute
-* * * * * root /pg_backup_rotated.sh -c /pg_backup.config &>> /var/log/cron.log
-
 # Run the backups at 3am each night
-#0 3 * * * root /pg_backup_rotated.sh -c /pg_backup.config &>> /var/log/cron.log
+0 3 * * * root /pg_backup_rotated.sh -c /pg_backup.config &>> /var/log/cron.log
+
 EOF
 chmod 0644 /etc/cron.d/crontab
 
