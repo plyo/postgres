@@ -1,60 +1,47 @@
-tutum-docker-postgresql
-=======================
+# plyo.postgres
 
-[![Deploy to Tutum](https://s.tutum.co/deploy-to-tutum.svg)](https://dashboard.tutum.co/stack/deploy/)
+Docker image for Plyo database
 
-Base docker image to run a PostgreSQL database server
+## What it does
 
+This image runs PostgreSQL and creates database and user for plyo.  Use together with [postgres-backups](https://github.com/plyo/plyo.postgres-backups) on production.
 
-Usage
------
+## Usage
 
-To create the image `tutum/postgresql`, execute the following command on the tutum-docker-postgresql folder:
+### How to run locally
 
-	docker build -t tutum/postgresql .
+First of all, make sure you have [docker installed](https://docs.docker.com/engine/installation/mac/) and run.
 
-To run the image and bind to port 5432:
+Then you can build an image:
+```bash
+> docker build -t postgres .
+```
 
-	docker run -d -p 5432:5432 tutum/postgresql
+Then you can run it
+```bash
+docker run -d -p 5432:5432 \
+  -e PLYO_PASS=password \
+  -e POSTGRES_PASS=password \
+  --name=db postgres
+```
 
-The first time that you run your container, a new user `postgres` with all privileges
-will be created in PostgreSQL with a random password. To get the password, check the logs
-of the container by running:
+You can see logs for the image using
+```bash
+docker logs db
+```
 
-	docker logs <CONTAINER_ID>
+That's all, you can connect to postgres using `psql`
 
-You will see an output like the following:
+### How to deploy using tutum
 
-	========================================================================
-	You can now connect to this PostgreSQL Server using:
+First of all, create two repos. Bind one to this repo and one to  [postgres-backups](https://github.com/plyo/plyo.postgres-backups)
 
-	    psql -h <host> -p <port> --username=postgres
-	and enter the password 'HHrUZyI6ubWF' when prompted
+Then create node(s) and set `postgres` deployment tag for it(them) 
 
-	Please remember to change the above password as soon as possible!
-	========================================================================
+![creating node](http://i.imgur.com/Zu1Ly4S.png)
 
-In this case, `HHrUZyI6ubWF` is the password assigned to the `postgres` user.
+Then create a stack using [tutum.yml](https://github.com/plyo/plyo.postgres/blob/master/tutum.yml) file from the repo
 
-Done!
+![stack](http://i.imgur.com/lq5il2i.png)
 
-
-Setting a specific password for the admin account
--------------------------------------------------
-
-If you want to use a preset password instead of a random generated one, you can
-set the environment variable `POSTGRES_PASS` to your specific password when running the container:
-
-	docker run -d -p 5432:5432 -e POSTGRES_PASS="mypass" tutum/postgresql
-
-
-Mounting the database file volume
----------------------------------
-
-Coming soon!
-
-
-Migrating an existing PostgreSQL Server
-----------------------------------
-
-Coming soon!
+Do not forget to set environment variables in stack files. See [postgres-backups](https://github.com/plyo/plyo.postgres-backups) README for GoogleDrvie API env variables.

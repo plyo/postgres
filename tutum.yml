@@ -1,7 +1,30 @@
-postgresql:
-  image: jifeon/plyo.postgresql
-  ports:
-    - 5432:5432
+backups:
+  image: 'tutum.co/agresvig/postgres-backups:latest'
   environment:
-    - POSTGRES_PASS="**ChangeMe**"
-    - PLYO_PASS="**ChangeMe**"
+    - ACCESS_TOKEN=
+    - CLIENT_ID=
+    - CLIENT_SECRET=
+    - EXPIRY_DATE=
+    - REFRESH_TOKEN=
+  links:
+    - 'postgres:db'
+  tags:
+    - postgres
+postgres:
+  image: 'tutum.co/agresvig/postgres:latest'
+  environment:
+    - PLYO_PASS=
+    - POSTGRES_PASS=
+  ports:
+    - '5432:5432'
+  tags:
+    - postgres
+postgres-test:
+  image: 'tutum.co/agresvig/postgres:latest'
+  environment:
+    - PLYO_PASS=
+    - POSTGRES_PASS=
+  ports:
+    - '5433:5432'
+  tags:
+    - postgres
