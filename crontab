@@ -1,8 +1,0 @@
-SHELL=/bin/bash
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-
-# For testing - run every minute
-* * * * * root /pg_backup_rotated.sh -c /pg_backup.config &>> /var/log/cron.log
-
-# Run the backups at 3am each night
-#0 3 * * * root /pg_backup_rotated.sh -c /pg_backup.config &>> /var/log/cron.log

@@ -98,6 +98,7 @@ function perform_backups()
 	                echo "[!!ERROR!!] Failed to backup database schema of $DATABASE" 1>&2
 	        else
 	                mv $FINAL_BACKUP_DIR"$DATABASE"_SCHEMA.sql.gz.in_progress $FINAL_BACKUP_DIR"$DATABASE"_SCHEMA.sql.gz
+	                node /uploadBackup.js $FINAL_BACKUP_DIR"$DATABASE"_SCHEMA.sql.gz
 	        fi
 	done
  
@@ -126,6 +127,7 @@ function perform_backups()
 				echo "[!!ERROR!!] Failed to produce plain backup database $DATABASE" 1>&2
 			else
 				mv $FINAL_BACKUP_DIR"$DATABASE".sql.gz.in_progress $FINAL_BACKUP_DIR"$DATABASE".sql.gz
+        node /uploadBackup.js $FINAL_BACKUP_DIR"$DATABASE".sql.gz
 			fi
 		fi
  
@@ -137,6 +139,7 @@ function perform_backups()
 				echo "[!!ERROR!!] Failed to produce custom backup database $DATABASE"
 			else
 				mv $FINAL_BACKUP_DIR"$DATABASE".custom.in_progress $FINAL_BACKUP_DIR"$DATABASE".custom
+        node /uploadBackup.js $FINAL_BACKUP_DIR"$DATABASE".custom
 			fi
 		fi
  
