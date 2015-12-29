@@ -13,6 +13,7 @@ backups:
 postgres:
   image: 'tutum.co/agresvig/postgres:latest'
   environment:
+    - APP_PASS=
     - PLYO_PASS=
     - POSTGRES_PASS=
   ports:
@@ -22,6 +23,7 @@ postgres:
 postgres-test:
   image: 'tutum.co/agresvig/postgres:latest'
   environment:
+    - APP_PASS=
     - PLYO_PASS=
     - POSTGRES_PASS=
   ports:

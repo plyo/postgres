@@ -4,7 +4,11 @@ Docker image for Plyo database
 
 ## What it does
 
-This image runs PostgreSQL and creates database and user for plyo.  Use together with [postgres-backups](https://github.com/plyo/plyo.postgres-backups) on production.
+This image runs PostgreSQL and creates database and user for plyo. Use together with 
+[postgres-backups](https://github.com/plyo/plyo.postgres-backups) on production. 
+
+- "plyo" user, db owner - for migrations 
+- "app" user - for application
 
 ## Usage
 
@@ -20,6 +24,7 @@ Then you can build an image:
 Then you can run it
 ```bash
 docker run -d -p 5432:5432 \
+  -e APP_PASS=password \
   -e PLYO_PASS=password \
   -e POSTGRES_PASS=password \
   --name=db postgres
