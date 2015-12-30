@@ -24,10 +24,22 @@ appUserExists=`su - postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolnam
 if [ -z "$appUserExists" ]; then
     echo "creating user app..."
     su - postgres -c "createuser app"
-    su - postgres -c "psql -U postgres -d plyo -c \"GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app;\""
-    su - postgres -c "psql -U postgres -d plyo -c \"GRANT UPDATE ON ALL SEQUENCES IN SCHEMA public TO app;\""
-    echo "Privelleges for app user are granted"
 fi
+
+# add app user to plyo group to set default privileges for new tables
+su - postgres -c "psql -U postgres -d plyo -c \"
+    GRANT app TO plyo;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app;
+    GRANT UPDATE ON ALL SEQUENCES IN SCHEMA public TO app;
+
+    ALTER DEFAULT PRIVILEGES FOR ROLE plyo IN SCHEMA public
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES
+    TO app;
+
+    ALTER DEFAULT PRIVILEGES FOR ROLE plyo IN SCHEMA public
+    GRANT UPDATE ON SEQUENCES
+    TO app;
+\""
 
 echo "Installing pgcrypt extension"
 su - postgres -c "psql -U postgres -d plyo -c \"CREATE EXTENSION IF NOT EXISTS pgcrypto;\""
