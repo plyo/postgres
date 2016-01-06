@@ -45,9 +45,11 @@ Once connected, verify that things are OK with something like `SELECT version();
 #### Importing data
 To use the DB for local development we obviously need some data. We can use a nightly DB dump from production for this, made nightly by the [postgres-backups](https://github.com/plyo/plyo.postgres-backups) image running on Tutum and stored in Plyo Google Drive -> "backups" folder.
 
-Given the correct path to backup image, and granted you have `gunzip` installed, this command should import that dump into the local DB (overwriting everything!):
+Given the correct path to backup image, and granted you have `gunzip` installed, this command should import that dump into the local DB:
 
-`gunzip -c plyo_backup.sql.gz | psql -h <IP> -U plyo`
+`gunzip -c plyo_backup.sql.gz | psql -h <IP> -U postgres -d plyo` which will connect to server as `postgres` user and dump contents into `plyo` db.
+
+We use `postgres` user here instead of Plyo because of permissions needed to install extensions included in the dump.
 
 Now, re-connect to the server and list DBs using `\list` - you should see `plyo` database as first DB. Connect to it using `\connect plyo`, and list all tables using `\dt`. If you see the familiar tables, then you're ready to use this DB for local development! Just make sure you have set `POSTGRES_SERVER` to the IP of your docker machine (this value defaults to `localhost` in our projects).
 
