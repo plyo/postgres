@@ -36,7 +36,10 @@ docker logs db
 ```
 
 #### Connecting to the server
-That's all, you can connect to postgres using `psql`. To do this, you need Postgres installed locally. Check out [this guide](https://www.codefellows.org/blog/three-battle-tested-ways-to-install-postgresql) for platform-dependent recommendations, but it should be as simple as an `apt-get install postgresql` on Linux, `brew install postgres` on OSX, or a binary download on Windows (make sure it is Postgres >= 9.4).
+That's all, you can connect to the running DB using `psql`, [DataGrip](https://www.jetbrains.com/datagrip/) or any other tools.
+
+##### Optional: Using `psql`
+ To do this, you need Postgres installed locally. Check out [this guide](https://www.codefellows.org/blog/three-battle-tested-ways-to-install-postgresql) for platform-dependent recommendations, but it should be as simple as an `apt-get install postgresql` on Linux, `brew install postgres` on OSX, or a binary download on Windows (make sure it is Postgres >= 9.4).
 
 Once properly installed, connecting to the DB server should be as simple as `psql -h <IP> -U plyo`, where `IP` is the IP of your running docker machine. On Linux (and Windows?) docker exposes ports to `locahost`, so you should be able to just use that. On OSX , you can get the IP of your machine using `(docker-machine ip default)`. Enter `password` when prompted.
 
@@ -45,6 +48,10 @@ Once connected, verify that things are OK with something like `SELECT version();
 #### Importing data
 To use the DB for local development we obviously need some data. We can use a nightly DB dump from production for this, made nightly by the [postgres-backups](https://github.com/plyo/plyo.postgres-backups) image running on Tutum and stored in Plyo Google Drive -> "backups" folder.
 
+#### Option 1: Via docker image
+See instructions on [plyo.web](https://github.com/plyo/plyo.web#configure-local-database) for how to log into docker container and import data dump directly.
+
+#### Option 2: Using `psql`
 Given the correct path to backup image, and granted you have `gunzip` installed, this command should import that dump into the local DB:
 
 `gunzip -c plyo_backup.sql.gz | psql -h <IP> -U postgres -d plyo` which will connect to server as `postgres` user and dump contents into `plyo` db.
