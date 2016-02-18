@@ -2,35 +2,10 @@
 
 # see https://wiki.postgresql.org/wiki/Automated_Backup_on_Linux
 
-###########################
-####### LOAD CONFIG #######
-###########################
- 
-while [ $# -gt 0 ]; do
-        case $1 in
-                -c)
-                        CONFIG_FILE_PATH="$2"
-                        shift 2
-                        ;;
-                *)
-                        echo "Unknown Option \"$1\"" 1>&2
-                        exit 2
-                        ;;
-        esac
-done
- 
-if [ -z $CONFIG_FILE_PATH ] ; then
-        SCRIPTPATH=$(cd ${0%/*} && pwd -P)
-        CONFIG_FILE_PATH="${SCRIPTPATH}/pg_backup.config"
-fi
- 
-if [ ! -r ${CONFIG_FILE_PATH} ] ; then
-        echo "Could not load config file from ${CONFIG_FILE_PATH}" 1>&2
-        exit 1
-fi
- 
-source "${CONFIG_FILE_PATH}"
- 
+source /etc/cronenv
+
+echo "Running backups..."
+
 ###########################
 #### PRE-BACKUP CHECKS ####
 ###########################
@@ -58,11 +33,18 @@ fi;
 ###########################
 #### START THE BACKUPS ####
 ###########################
- 
+
+SKIPPING=1
+
 function perform_backups()
 {
 	SUFFIX=$1
 	FINAL_BACKUP_DIR=$BACKUP_DIR"`date +\%Y-\%m-\%d`$SUFFIX/"
+
+	if [ -d "$FINAL_BACKUP_DIR" ]; then
+	  echo "$FINAL_BACKUP_DIR already exists, skipping dump"
+	  return $SKIPPING
+	fi
  
 	echo "Making backup directory in $FINAL_BACKUP_DIR"
  
@@ -70,49 +52,17 @@ function perform_backups()
 		echo "Cannot create backup directory in $FINAL_BACKUP_DIR. Go and fix it!" 1>&2
 		exit 1;
 	fi;
- 
- 
-	###########################
-	### SCHEMA-ONLY BACKUPS ###
-	###########################
- 
-	for SCHEMA_ONLY_DB in ${SCHEMA_ONLY_LIST//,/ }
-	do
-	        SCHEMA_ONLY_CLAUSE="$SCHEMA_ONLY_CLAUSE or datname ~ '$SCHEMA_ONLY_DB'"
-	done
- 
-	SCHEMA_ONLY_QUERY="select datname from pg_database where false $SCHEMA_ONLY_CLAUSE order by datname;"
- 
-	echo -e "\n\nPerforming schema-only backups"
-	echo -e "--------------------------------------------\n"
- 
-	SCHEMA_ONLY_DB_LIST=`psql -h "$HOSTNAME" -U "$USERNAME" -At -c "$SCHEMA_ONLY_QUERY" postgres`
- 
-	echo -e "The following databases were matched for schema-only backup:\n${SCHEMA_ONLY_DB_LIST}\n"
- 
-	for DATABASE in $SCHEMA_ONLY_DB_LIST
-	do
-	        echo "Schema-only backup of $DATABASE"
- 
-	        if ! pg_dump -Fp -s -h "$HOSTNAME" -U "$USERNAME" "$DATABASE" | gzip > $FINAL_BACKUP_DIR"$DATABASE"_SCHEMA.sql.gz.in_progress; then
-	                echo "[!!ERROR!!] Failed to backup database schema of $DATABASE" 1>&2
-	        else
-	                mv $FINAL_BACKUP_DIR"$DATABASE"_SCHEMA.sql.gz.in_progress $FINAL_BACKUP_DIR"$DATABASE"_SCHEMA.sql.gz
-	                node /uploadBackup.js $FINAL_BACKUP_DIR"$DATABASE"_SCHEMA.sql.gz
-	        fi
-	done
- 
- 
+
 	###########################
 	###### FULL BACKUPS #######
 	###########################
  
-	for SCHEMA_ONLY_DB in ${SCHEMA_ONLY_LIST//,/ }
+	for EXCLUDED_SCHEMA in ${EXCLUDE_SCHEMA_LIST//,/ }
 	do
-		EXCLUDE_SCHEMA_ONLY_CLAUSE="$EXCLUDE_SCHEMA_ONLY_CLAUSE and datname !~ '$SCHEMA_ONLY_DB'"
+		EXCLUDE_SCHEMA_CLAUSE="$EXCLUDE_SCHEMA_CLAUSE and datname !~ '$EXCLUDED_SCHEMA'"
 	done
- 
-	FULL_BACKUP_QUERY="select datname from pg_database where not datistemplate and datallowconn $EXCLUDE_SCHEMA_ONLY_CLAUSE order by datname;"
+
+	FULL_BACKUP_QUERY="select datname from pg_database where not datistemplate and datallowconn $EXCLUDE_SCHEMA_CLAUSE order by datname;"
  
 	echo -e "\n\nPerforming full backups"
 	echo -e "--------------------------------------------\n"
@@ -144,6 +94,11 @@ function perform_backups()
 		fi
  
 	done
+
+	if [[ "$SUFFIX" == -hourly* ]]; then
+	  echo "Removing hourly backups directory"
+	  rm -rf $FINAL_BACKUP_DIR
+	fi
  
 	echo -e "\nAll database backups complete!"
 }
@@ -181,5 +136,9 @@ fi
  
 # Delete daily backups 7 days old or more
 find $BACKUP_DIR -maxdepth 1 -mtime +$DAYS_TO_KEEP -name "*-daily" -exec rm -rf '{}' ';'
- 
+
 perform_backups "-daily"
+backups_result=$?
+if [ "$backups_result" -eq $SKIPPING ]; then
+  perform_backups "-hourly-`date +\%H:\%M`"
+fi
