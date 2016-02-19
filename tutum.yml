@@ -1,0 +1,34 @@
+backups:
+  image: 'tutum.co/agresvig/postgres-backups:latest'
+  environment:
+    - ACCESS_TOKEN=
+    - CLIENT_ID=
+    - CLIENT_SECRET=
+    - EXPIRY_DATE=
+    - REFRESH_TOKEN=
+    - HOSTNAME=db
+    - BACKUP_DIR=/backups/
+    - ENABLE_CUSTOM_BACKUPS=yes
+    - ENABLE_PLAIN_BACKUPS=no
+    - EXCLUDE_SCHEMA_LIST='postgres'
+    - DAY_OF_WEEK_TO_KEEP=5
+    - DAYS_TO_KEEP=7
+    - WEEKS_TO_KEEP=5
+    - CRON_PERIOD=0 * * * *
+    - GDRIVE_UPLOAD_DIR=backups
+  links:
+    - 'postgres:db'
+  tags:
+    - postgres
+  restart: always
+postgres:
+  image: 'tutum.co/agresvig/postgres:latest'
+  environment:
+    - APP_PASS=
+    - PLYO_PASS=
+    - POSTGRES_PASS=
+  ports:
+    - '5432:5432'
+  tags:
+    - postgres
+  restart: always

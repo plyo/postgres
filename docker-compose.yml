@@ -1,0 +1,63 @@
+backups:
+  build: .
+  environment:
+    # Google drive settings
+    - ACCESS_TOKEN=$GDRIVE_ACCESS_TOKEN
+    - CLIENT_ID=$GDRIVE_CLIENT_ID
+    - CLIENT_SECRET=$GDRIVE_CLIENT_SECRET
+    - EXPIRY_DATE=$GDRIVE_EXPIRY_DATE
+    - REFRESH_TOKEN=$GDRIVE_REFRESH_TOKEN
+
+    # Optional system user to run backups as.  If the user the script is running as doesn't match this
+    # the script terminates.  Leave blank to skip check.
+    # - BACKUP_USER=
+
+    # Optional hostname to adhere to pg_hba policies.  Will default to "localhost" if none specified.
+    - HOSTNAME=db
+
+    # Optional username to connect to database as.  Will default to "postgres" if none specified.
+    # - USERNAME=
+
+    # This dir will be created if it doesn't exist.  This must be writable by the user the script is
+    # running as.
+    - BACKUP_DIR=/backups/
+
+    # Will produce a custom-format backup if set to "yes"
+    - ENABLE_CUSTOM_BACKUPS=yes
+
+    # Will produce a gzipped plain-format backup if set to "yes"
+    - ENABLE_PLAIN_BACKUPS=no
+
+    - EXCLUDE_SCHEMA_LIST='postgres'
+
+    # SETTINGS FOR ROTATED BACKUPS
+
+    # Which day to take the weekly backup from (1-7 = Monday-Sunday)
+    - DAY_OF_WEEK_TO_KEEP=5
+
+    # Number of days to keep daily backups
+    - DAYS_TO_KEEP=7
+
+    # How many weeks to keep weekly backups
+    - WEEKS_TO_KEEP=5
+
+    # Run backups at 3am each night
+    # -CRON_PERIOD=0 3 * * *
+
+    # Run backups every minute for tests
+    - CRON_PERIOD=* * * * *
+
+    # - GDRIVE_UPLOAD_DIR=backups
+    - GDRIVE_UPLOAD_DIR=dev-backups
+  links:
+    - 'postgres:db'
+  volumes:
+    - './backups/:/backups/'
+postgres:
+  image: 'postgres'
+  environment:
+    - APP_PASS=password
+    - PLYO_PASS=password
+    - POSTGRES_PASS=password
+  ports:
+    - '5432:5432'
