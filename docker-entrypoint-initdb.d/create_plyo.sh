@@ -11,7 +11,7 @@ if [ -z "$APP_PASS" ]; then
 fi
 
 echo "Searching existing user";
-userExists=`su - postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='plyo'\""`
+userExists=`psql --username postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='plyo'"`
 if [ -z "$userExists" ]; then
     echo "creating DB and user plyo..."
     su - postgres -c "createuser plyo"
@@ -20,14 +20,14 @@ if [ -z "$userExists" ]; then
 fi
 
 echo "Searching for app user";
-appUserExists=`su - postgres -c "psql -tAc \"SELECT 1 FROM pg_roles WHERE rolname='app'\""`
+appUserExists=`psql --username postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='app'"`
 if [ -z "$appUserExists" ]; then
     echo "creating user app..."
     su - postgres -c "createuser app"
 fi
 
 # add app user to plyo group to set default privileges for new tables
-su - postgres -c "psql -U postgres -d plyo -c \"
+psql --username postgres -d plyo <<-EOSQL
     GRANT app TO plyo;
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO app;
     GRANT UPDATE ON ALL SEQUENCES IN SCHEMA public TO app;
@@ -39,13 +39,13 @@ su - postgres -c "psql -U postgres -d plyo -c \"
     ALTER DEFAULT PRIVILEGES FOR ROLE plyo IN SCHEMA public
     GRANT UPDATE ON SEQUENCES
     TO app;
-\""
+EOSQL
 
 echo "Installing pgcrypt extension"
-su - postgres -c "psql -U postgres -d plyo -c \"CREATE EXTENSION IF NOT EXISTS pgcrypto;\""
+psql --username postgres -d plyo -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
 
 echo "=> Modifying 'plyo' user with a preset password in PostgreSQL"
-su - postgres -c "psql -U postgres -d plyo -c \"alter user plyo with password '$PLYO_PASS';\""
+psql --username postgres -d plyo -c "alter user plyo with password '$PLYO_PASS';"
 echo "=> Modifying 'app' user with a preset password in PostgreSQL"
-su - postgres -c "psql -U postgres -d plyo -c \"alter user app with password '$APP_PASS';\""
+psql --username postgres -d plyo -c "alter user app with password '$APP_PASS';"
 echo "=> Done!"

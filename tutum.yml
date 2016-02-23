@@ -1,35 +1,11 @@
-backups:
-  image: 'tutum.co/agresvig/postgres-backups:latest'
-  environment:
-    - ACCESS_TOKEN=
-    - CLIENT_ID=
-    - CLIENT_SECRET=
-    - EXPIRY_DATE=
-    - REFRESH_TOKEN=
-  links:
-    - 'postgres:db'
-  tags:
-    - postgres
-  restart: always
 postgres:
   image: 'tutum.co/agresvig/postgres:latest'
   environment:
     - APP_PASS=
     - PLYO_PASS=
-    - POSTGRES_PASS=
+    - POSTGRES_PASSWORD=
   ports:
     - '5432:5432'
-  tags:
-    - postgres
-  restart: always
-postgres-test:
-  image: 'tutum.co/agresvig/postgres:latest'
-  environment:
-    - APP_PASS=
-    - PLYO_PASS=
-    - POSTGRES_PASS=
-  ports:
-    - '5433:5432'
   tags:
     - postgres
   restart: always
