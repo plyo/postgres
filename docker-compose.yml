@@ -58,6 +58,6 @@ postgres:
   environment:
     - APP_PASS=password
     - PLYO_PASS=password
-    - POSTGRES_PASS=password
+    - POSTGRES_PASSWORD=password
   ports:
     - '5432:5432'

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 echo "Saving password for postgres"
-echo "db:5432:*:postgres:$DB_ENV_POSTGRES_PASS" > /root/.pgpass
+echo "db:5432:*:postgres:$DB_ENV_POSTGRES_PASSWORD" > /root/.pgpass
 cat /root/.pgpass
 chmod 0600 /root/.pgpass
 
