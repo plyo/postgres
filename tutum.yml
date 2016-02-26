@@ -26,7 +26,7 @@ postgres:
   environment:
     - APP_PASS=
     - PLYO_PASS=
-    - POSTGRES_PASS=
+    - POSTGRES_PASSWORD=
   ports:
     - '5432:5432'
   tags:

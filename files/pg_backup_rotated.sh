@@ -128,11 +128,15 @@ then
 	find $BACKUP_DIR -maxdepth 1 -mtime +$EXPIRED_DAYS -name "*-weekly" -exec rm -rf '{}' ';'
  
 	perform_backups "-weekly"
+	backups_result=$?
+	if [ "$backups_result" -eq $SKIPPING ]; then
+	  perform_backups "-hourly-`date +\%H:\%M`"
+	fi
  
 	exit 0;
 fi
  
-# DAILY BACKUPS
+# DAILY AND HOURLY BACKUPS
  
 # Delete daily backups 7 days old or more
 find $BACKUP_DIR -maxdepth 1 -mtime +$DAYS_TO_KEEP -name "*-daily" -exec rm -rf '{}' ';'
