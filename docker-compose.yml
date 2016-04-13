@@ -8,27 +8,15 @@ backups:
     - EXPIRY_DATE=$GDRIVE_EXPIRY_DATE
     - REFRESH_TOKEN=$GDRIVE_REFRESH_TOKEN
 
-    # Optional system user to run backups as.  If the user the script is running as doesn't match this
-    # the script terminates.  Leave blank to skip check.
-    # - BACKUP_USER=
-
-    # Optional hostname to adhere to pg_hba policies.  Will default to "localhost" if none specified.
-    - HOSTNAME=db
-
-    # Optional username to connect to database as.  Will default to "postgres" if none specified.
-    # - USERNAME=
+    # DBs to dump
+    - DB_CONFIG_1=192.168.99.100:5432:*:postgres:password
+    - DB_CONFIG_2=192.168.99.100:5433:*:postgres:password
 
     # This dir will be created if it doesn't exist.  This must be writable by the user the script is
     # running as.
     - BACKUP_DIR=/backups/
 
-    # Will produce a custom-format backup if set to "yes"
-    - ENABLE_CUSTOM_BACKUPS=yes
-
-    # Will produce a gzipped plain-format backup if set to "yes"
-    - ENABLE_PLAIN_BACKUPS=no
-
-    - EXCLUDE_SCHEMA_LIST='postgres'
+    - INCLUDE_SCHEMA_LIST='plyo'
 
     # SETTINGS FOR ROTATED BACKUPS
 
@@ -47,13 +35,10 @@ backups:
     # Run backups every minute for tests
     - CRON_PERIOD=* * * * *
 
-    # - GDRIVE_UPLOAD_DIR=backups
     - GDRIVE_UPLOAD_DIR=dev-backups
-  links:
-    - 'postgres:db'
   volumes:
     - './backups/:/backups/'
-postgres:
+postgres-1:
   image: 'postgres'
   environment:
     - APP_PASS=password
@@ -61,3 +46,11 @@ postgres:
     - POSTGRES_PASSWORD=password
   ports:
     - '5432:5432'
+postgres-2:
+  image: 'postgres'
+  environment:
+    - APP_PASS=password
+    - PLYO_PASS=password
+    - POSTGRES_PASSWORD=password
+  ports:
+    - '5433:5432'

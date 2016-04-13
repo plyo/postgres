@@ -7,30 +7,6 @@ source /etc/cronenv
 echo "Running backups..."
 
 ###########################
-#### PRE-BACKUP CHECKS ####
-###########################
- 
-# Make sure we're running as the required backup user
-if [ "$BACKUP_USER" != "" -a "$(id -un)" != "$BACKUP_USER" ] ; then
-	echo "This script must be run as $BACKUP_USER. Exiting." 1>&2
-	exit 1
-fi
- 
- 
-###########################
-### INITIALISE DEFAULTS ###
-###########################
- 
-if [ ! $HOSTNAME ]; then
-	HOSTNAME="localhost"
-fi;
- 
-if [ ! $USERNAME ]; then
-	USERNAME="postgres"
-fi;
- 
- 
-###########################
 #### START THE BACKUPS ####
 ###########################
 
@@ -38,111 +14,118 @@ SKIPPING=1
 
 function perform_backups()
 {
-	SUFFIX=$1
-	FINAL_BACKUP_DIR=$BACKUP_DIR"`date +\%Y-\%m-\%d`$SUFFIX/"
+    local suffix=$1
+    local db_host=$2
+    local db_port=$3
 
-	if [ -d "$FINAL_BACKUP_DIR" ]; then
-	  echo "$FINAL_BACKUP_DIR already exists, skipping dump"
-	  return $SKIPPING
-	fi
- 
-	echo "Making backup directory in $FINAL_BACKUP_DIR"
- 
-	if ! mkdir -p $FINAL_BACKUP_DIR; then
-		echo "Cannot create backup directory in $FINAL_BACKUP_DIR. Go and fix it!" 1>&2
-		exit 1;
-	fi;
+    FINAL_BACKUP_DIR=${BACKUP_DIR}"`date +\%Y-\%m-\%d`$suffix/"
 
-	###########################
-	###### FULL BACKUPS #######
-	###########################
- 
-	for EXCLUDED_SCHEMA in ${EXCLUDE_SCHEMA_LIST//,/ }
-	do
-		EXCLUDE_SCHEMA_CLAUSE="$EXCLUDE_SCHEMA_CLAUSE and datname !~ '$EXCLUDED_SCHEMA'"
-	done
+    if [ -d "$FINAL_BACKUP_DIR" ]; then
+        echo "$FINAL_BACKUP_DIR already exists, skipping dump"
+        return ${SKIPPING}
+    fi
 
-	FULL_BACKUP_QUERY="select datname from pg_database where not datistemplate and datallowconn $EXCLUDE_SCHEMA_CLAUSE order by datname;"
- 
-	echo -e "\n\nPerforming full backups"
-	echo -e "--------------------------------------------\n"
- 
-	for DATABASE in `psql -h "$HOSTNAME" -U "$USERNAME" -At -c "$FULL_BACKUP_QUERY" postgres`
-	do
-		if [ $ENABLE_PLAIN_BACKUPS = "yes" ]
-		then
-			echo "Plain backup of $DATABASE"
- 
-			if ! pg_dump -Fp -h "$HOSTNAME" -U "$USERNAME" "$DATABASE" | gzip > $FINAL_BACKUP_DIR"$DATABASE".sql.gz.in_progress; then
-				echo "[!!ERROR!!] Failed to produce plain backup database $DATABASE" 1>&2
-			else
-				mv $FINAL_BACKUP_DIR"$DATABASE".sql.gz.in_progress $FINAL_BACKUP_DIR"$DATABASE".sql.gz
-        node /uploadBackup.js $FINAL_BACKUP_DIR"$DATABASE".sql.gz
-			fi
-		fi
- 
-		if [ $ENABLE_CUSTOM_BACKUPS = "yes" ]
-		then
-			echo "Custom backup of $DATABASE"
- 
-			if ! pg_dump -Fc -h "$HOSTNAME" -U "$USERNAME" "$DATABASE" -f $FINAL_BACKUP_DIR"$DATABASE".custom.in_progress; then
-				echo "[!!ERROR!!] Failed to produce custom backup database $DATABASE"
-			else
-				mv $FINAL_BACKUP_DIR"$DATABASE".custom.in_progress $FINAL_BACKUP_DIR"$DATABASE".custom
-        node /uploadBackup.js $FINAL_BACKUP_DIR"$DATABASE".custom
-			fi
-		fi
- 
-	done
+    echo "Making backup directory in $FINAL_BACKUP_DIR"
 
-	if [[ "$SUFFIX" == -hourly* ]]; then
-	  echo "Removing hourly backups directory"
-	  rm -rf $FINAL_BACKUP_DIR
-	fi
- 
-	echo -e "\nAll database backups complete!"
+    if ! mkdir -p ${FINAL_BACKUP_DIR}; then
+        echo "Cannot create backup directory in $FINAL_BACKUP_DIR. Go and fix it!" 1>&2
+        exit 1;
+    fi;
+
+    ###########################
+    ###### FULL BACKUPS #######
+    ###########################
+
+    echo -e "\n\nPerforming full backups"
+    echo -e "--------------------------------------------\n"
+
+    for db in ${INCLUDE_SCHEMA_LIST//,/ }
+    do
+        echo "Custom backup of $db"
+        backup_file_name=${FINAL_BACKUP_DIR}"${db_host}_${db_port}_${db}".backup
+
+        if ! pg_dump -Fc -h "$db_host" -p "$db_port" -U postgres "$db" -f ${backup_file_name}.in_progress; then
+            echo "[!!ERROR!!] Failed to produce custom backup database $db"
+        else
+            mv ${backup_file_name}.in_progress ${backup_file_name}
+            node /uploadBackup.js ${backup_file_name}
+        fi
+    done
+
+    if [[ "$suffix" == -${db_host}-${db_port}-hourly* ]]; then
+        echo "Removing hourly backups directory"
+        rm -rf ${FINAL_BACKUP_DIR}
+    fi
+
+    echo -e "\nAll database backups complete!"
 }
- 
-# MONTHLY BACKUPS
- 
-DAY_OF_MONTH=`date +%d`
- 
-if [ $DAY_OF_MONTH -eq 1 ];
-then
-	# Delete all expired monthly directories
-	find $BACKUP_DIR -maxdepth 1 -name "*-monthly" -exec rm -rf '{}' ';'
- 
-	perform_backups "-monthly"
- 
-	exit 0;
-fi
- 
-# WEEKLY BACKUPS
- 
-DAY_OF_WEEK=`date +%u` #1-7 (Monday-Sunday)
-EXPIRED_DAYS=`expr $((($WEEKS_TO_KEEP * 7) + 1))`
- 
-if [ $DAY_OF_WEEK = $DAY_OF_WEEK_TO_KEEP ];
-then
-	# Delete all expired weekly directories
-	find $BACKUP_DIR -maxdepth 1 -mtime +$EXPIRED_DAYS -name "*-weekly" -exec rm -rf '{}' ';'
- 
-	perform_backups "-weekly"
-	backups_result=$?
-	if [ "$backups_result" -eq $SKIPPING ]; then
-	  perform_backups "-hourly-`date +\%H:\%M`"
-	fi
- 
-	exit 0;
-fi
- 
-# DAILY AND HOURLY BACKUPS
- 
-# Delete daily backups 7 days old or more
-find $BACKUP_DIR -maxdepth 1 -mtime +$DAYS_TO_KEEP -name "*-daily" -exec rm -rf '{}' ';'
 
-perform_backups "-daily"
-backups_result=$?
-if [ "$backups_result" -eq $SKIPPING ]; then
-  perform_backups "-hourly-`date +\%H:\%M`"
-fi
+function dump_database()
+{
+    local db_host=$1
+    local db_port=$2
+
+    # MONTHLY BACKUPS
+
+    DAY_OF_MONTH=`date +%d`
+
+    if [ ${DAY_OF_MONTH} -eq 1 ];
+    then
+        # Delete all expired monthly directories
+        find ${BACKUP_DIR} -maxdepth 1 -name "*-${db_host}-${db_port}-monthly" -exec rm -rf '{}' ';'
+
+        perform_backups "-${db_host}-${db_port}-monthly" ${db_host} ${db_port}
+
+        return 0;
+    fi
+
+    # WEEKLY BACKUPS
+
+    DAY_OF_WEEK=`date +%u` #1-7 (Monday-Sunday)
+    EXPIRED_DAYS=`expr $(( ($WEEKS_TO_KEEP * 7) + 1 ))`
+
+    if [ ${DAY_OF_WEEK} = ${DAY_OF_WEEK_TO_KEEP} ];
+    then
+        # Delete all expired weekly directories
+        find ${BACKUP_DIR} -maxdepth 1 -mtime +${EXPIRED_DAYS} -name "*-${db_host}-${db_port}-weekly" -exec rm -rf '{}' ';'
+
+        perform_backups "-${db_host}-${db_port}-weekly" ${db_host} ${db_port}
+        backups_result=$?
+        if [ "$backups_result" -eq ${SKIPPING} ]; then
+            perform_backups "-${db_host}-${db_port}-hourly-`date +\%H:\%M`" ${db_host} ${db_port}
+        fi
+
+        return 0;
+    fi
+
+    # DAILY AND HOURLY BACKUPS
+
+    # Delete daily backups 7 days old or more
+    find ${BACKUP_DIR} -maxdepth 1 -mtime +${DAYS_TO_KEEP} -name "*-${db_host}-${db_port}-daily" -exec rm -rf '{}' ';'
+
+    perform_backups "-${db_host}-${db_port}-daily" ${db_host} ${db_port}
+    backups_result=$?
+    if [ "$backups_result" -eq ${SKIPPING} ]; then
+        perform_backups "-${db_host}-${db_port}-hourly-`date +\%H:\%M`" ${db_host} ${db_port}
+    fi
+}
+
+db_number=1
+db_config_var_name=DB_CONFIG_${db_number};
+while [ "${!db_config_var_name}" ]; do
+    db_config=${!db_config_var_name};
+
+    if [[ "${db_config}" =~ ^([^:]+):([[:digit:]]+):.*$ ]];
+    then
+      DB_HOST=${BASH_REMATCH[1]}
+      DB_PORT=${BASH_REMATCH[2]}
+
+      dump_database ${DB_HOST} ${DB_PORT}
+    else
+      echo "Wrong db config ${db_config}, should match this format: 'host:port:db:user:password'";
+      exit 1;
+    fi
+
+    let "db_number += 1"
+    db_config_var_name=DB_CONFIG_${db_number};
+done

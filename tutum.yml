@@ -6,18 +6,15 @@ backups:
     - CLIENT_SECRET=
     - EXPIRY_DATE=
     - REFRESH_TOKEN=
-    - HOSTNAME=db
     - BACKUP_DIR=/backups/
-    - ENABLE_CUSTOM_BACKUPS=yes
-    - ENABLE_PLAIN_BACKUPS=no
-    - EXCLUDE_SCHEMA_LIST='postgres'
+    - INCLUDE_SCHEMA_LIST='plyo'
     - DAY_OF_WEEK_TO_KEEP=5
     - DAYS_TO_KEEP=7
     - WEEKS_TO_KEEP=5
     - CRON_PERIOD=0 * * * *
     - GDRIVE_UPLOAD_DIR=backups
-  links:
-    - 'postgres:db'
+    - DB_CONFIG_1=postgres.postgres.agresvig.svc.tutum.io:5432:*:postgres:password
+    - DB_CONFIG_2=plyo-postgres.postgres.agresvig.svc.tutum.io:5434:*:postgres:password
   tags:
     - postgres
   restart: always
