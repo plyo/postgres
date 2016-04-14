@@ -37,7 +37,7 @@ drive.files.list({
   console.log(`Uploading ${filePath}...`);
   drive.files.create({
     resource: {
-      name: filePath,
+      name: path.basename(filePath),
       parents: [response.files[0].id],
       mimeType: 'application/x-gzip'
     },

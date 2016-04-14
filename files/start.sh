@@ -1,7 +1,15 @@
 #!/usr/bin/env bash
 
 echo "Saving password for postgres"
-echo "db:5432:*:postgres:$DB_ENV_POSTGRES_PASSWORD" > /root/.pgpass
+
+db_number=1
+db_config_var_name=DB_CONFIG_${db_number};
+while [ "${!db_config_var_name}" ]; do
+    echo ${!db_config_var_name} >> /root/.pgpass
+    export_configs="${export_configs}export ${db_config_var_name}=${!db_config_var_name}\n"
+    let "db_number += 1"
+    db_config_var_name=DB_CONFIG_${db_number};
+done
 cat /root/.pgpass
 chmod 0600 /root/.pgpass
 
@@ -13,16 +21,13 @@ export ACCESS_TOKEN=$ACCESS_TOKEN
 export REFRESH_TOKEN=$REFRESH_TOKEN
 export GDRIVE_UPLOAD_DIR=$GDRIVE_UPLOAD_DIR
 export EXPIRY_DATE=$EXPIRY_DATE
-export BACKUP_USER=$BACKUP_USER
 export HOSTNAME=$HOSTNAME
-export USERNAME=$USERNAME
 export BACKUP_DIR=$BACKUP_DIR
-export ENABLE_CUSTOM_BACKUPS=$ENABLE_CUSTOM_BACKUPS
-export ENABLE_PLAIN_BACKUPS=$ENABLE_PLAIN_BACKUPS
 export DAY_OF_WEEK_TO_KEEP=$DAY_OF_WEEK_TO_KEEP
 export DAYS_TO_KEEP=$DAYS_TO_KEEP
 export WEEKS_TO_KEEP=$WEEKS_TO_KEEP
-export EXCLUDE_SCHEMA_LIST=$EXCLUDE_SCHEMA_LIST
+export INCLUDE_SCHEMA_LIST=$INCLUDE_SCHEMA_LIST
+${export_configs}
 
 EOF
 
