@@ -9,8 +9,8 @@ backups:
     - REFRESH_TOKEN=$GDRIVE_REFRESH_TOKEN
 
     # DBs to dump
-    - DB_CONFIG_1=192.168.99.100:5432:*:postgres:password
-    - DB_CONFIG_2=192.168.99.100:5433:*:postgres:password
+    - DB_CONFIG_1=postgres-1:5432:*:postgres:password
+    - DB_CONFIG_2=postgres-2:5432:*:postgres:password
 
     # This dir will be created if it doesn't exist.  This must be writable by the user the script is
     # running as.
@@ -38,19 +38,18 @@ backups:
     - GDRIVE_UPLOAD_DIR=dev-backups
   volumes:
     - './backups/:/backups/'
+  links:
+    - postgres-1
+    - postgres-2
 postgres-1:
-  image: 'postgres'
+  image: 'plyo/postgres'
   environment:
     - APP_PASS=password
     - PLYO_PASS=password
     - POSTGRES_PASSWORD=password
-  ports:
-    - '5432:5432'
 postgres-2:
-  image: 'postgres'
+  image: 'plyo/postgres'
   environment:
     - APP_PASS=password
     - PLYO_PASS=password
     - POSTGRES_PASSWORD=password
-  ports:
-    - '5433:5432'
