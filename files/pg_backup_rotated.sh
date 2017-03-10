@@ -42,7 +42,8 @@ function perform_backups()
     for db in ${INCLUDE_SCHEMA_LIST//,/ }
     do
         echo "Custom backup of $db"
-        backup_file_name=${FINAL_BACKUP_DIR}"${db_host}_${db_port}_${db}".backup
+        backup_date=`date +%Y-%m-%d_%H:%M`
+        backup_file_name=${FINAL_BACKUP_DIR}"${backup_date}_${db_host}_${db_port}_${db}".backup
 
         if ! pg_dump -Fc -h "$db_host" -p "$db_port" -U postgres "$db" -f ${backup_file_name}.in_progress; then
             echo "[!!ERROR!!] Failed to produce custom backup database $db"
