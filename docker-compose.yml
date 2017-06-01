@@ -1,13 +1,6 @@
 backups:
   build: .
   environment:
-    # Google drive settings
-    - ACCESS_TOKEN=$GDRIVE_ACCESS_TOKEN
-    - CLIENT_ID=$GDRIVE_CLIENT_ID
-    - CLIENT_SECRET=$GDRIVE_CLIENT_SECRET
-    - EXPIRY_DATE=$GDRIVE_EXPIRY_DATE
-    - REFRESH_TOKEN=$GDRIVE_REFRESH_TOKEN
-
     # DBs to dump
     - DB_CONFIG_1=postgres-1:5432:*:postgres:password
     - DB_CONFIG_2=postgres-2:5432:*:postgres:password
@@ -16,7 +9,7 @@ backups:
     # running as.
     - BACKUP_DIR=/backups/
 
-    - INCLUDE_SCHEMA_LIST='plyo'
+    - INCLUDE_SCHEMA_LIST=plyo
 
     # SETTINGS FOR ROTATED BACKUPS
 
@@ -28,19 +21,14 @@ backups:
 
     # How many weeks to keep weekly backups
     - WEEKS_TO_KEEP=5
-
-    # Run backups at 3am each night
-    # -CRON_PERIOD=0 3 * * *
-
-    # Run backups every minute for tests
-    - CRON_PERIOD=* * * * *
-
-    - GDRIVE_UPLOAD_DIR=dev-backups
   volumes:
-    - './backups/:/backups/'
+    - ./backups/:/backups/
+    - ./src:/usr/src/app/
   links:
     - postgres-1
     - postgres-2
+  entrypoint: ''
+  command: /usr/src/app/start.sh
 postgres-1:
   image: 'plyo/postgres'
   environment:

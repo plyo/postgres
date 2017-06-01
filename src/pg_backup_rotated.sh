@@ -2,8 +2,6 @@
 
 # see https://wiki.postgresql.org/wiki/Automated_Backup_on_Linux
 
-source /etc/cronenv
-
 echo "Running backups..."
 
 ###########################
@@ -49,14 +47,8 @@ function perform_backups()
             echo "[!!ERROR!!] Failed to produce custom backup database $db"
         else
             mv ${backup_file_name}.in_progress ${backup_file_name}
-            node /uploadBackup.js ${backup_file_name}
         fi
     done
-
-    if [[ "$suffix" == -${db_host}-${db_port}-hourly* ]]; then
-        echo "Removing hourly backups directory"
-        rm -rf ${FINAL_BACKUP_DIR}
-    fi
 
     echo -e "\nAll database backups complete!"
 }
@@ -101,8 +93,9 @@ function dump_database()
 
     # DAILY AND HOURLY BACKUPS
 
-    # Delete daily backups 7 days old or more
+    # Delete daily and hourly backups 7 days old or more
     find ${BACKUP_DIR} -maxdepth 1 -mtime +${DAYS_TO_KEEP} -name "*-${db_host}-${db_port}-daily" -exec rm -rf '{}' ';'
+    find ${BACKUP_DIR} -maxdepth 1 -mtime +${DAYS_TO_KEEP} -name "*-${db_host}-${db_port}-hourly-*" -exec rm -rf '{}' ';'
 
     perform_backups "-${db_host}-${db_port}-daily" ${db_host} ${db_port}
     backups_result=$?
@@ -112,10 +105,8 @@ function dump_database()
 }
 
 db_number=1
-db_config_var_name=DB_CONFIG_${db_number};
-while [ "${!db_config_var_name}" ]; do
-    db_config=${!db_config_var_name};
-
+eval "db_config=\$DB_CONFIG_${db_number}"
+while [ "${db_config}" ]; do
     if [[ "${db_config}" =~ ^([^:]+):([[:digit:]]+):.*$ ]];
     then
       DB_HOST=${BASH_REMATCH[1]}
@@ -128,5 +119,5 @@ while [ "${!db_config_var_name}" ]; do
     fi
 
     let "db_number += 1"
-    db_config_var_name=DB_CONFIG_${db_number};
+    eval "db_config=\$DB_CONFIG_${db_number}"
 done
