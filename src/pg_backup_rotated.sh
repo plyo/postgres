@@ -16,41 +16,22 @@ function perform_backups()
     local db_host=$2
     local db_port=$3
 
-    FINAL_BACKUP_DIR=${BACKUP_DIR}"`date +\%Y-\%m-\%d`$suffix/"
+    backup_date=`date +%Y-%m-%d`
+    backup_file_path="${BACKUP_DIR}${backup_date}${suffix}".backup
 
-    if [ -d "$FINAL_BACKUP_DIR" ]; then
-        echo "$FINAL_BACKUP_DIR already exists, skipping dump"
+    if [ -e "${backup_file_path}" ]; then
+        echo "${backup_file_path} already exists, skipping dump"
         return ${SKIPPING}
     fi
 
-    echo "Making backup directory in $FINAL_BACKUP_DIR"
+    echo -e "\n\nPerforming custom backup for plyo database to ${backup_file_path}"
 
-    if ! mkdir -p ${FINAL_BACKUP_DIR}; then
-        echo "Cannot create backup directory in $FINAL_BACKUP_DIR. Go and fix it!" 1>&2
-        exit 1;
-    fi;
-
-    ###########################
-    ###### FULL BACKUPS #######
-    ###########################
-
-    echo -e "\n\nPerforming full backups"
-    echo -e "--------------------------------------------\n"
-
-    for db in ${INCLUDE_SCHEMA_LIST//,/ }
-    do
-        echo "Custom backup of $db"
-        backup_date=`date +%Y-%m-%d_%H:%M`
-        backup_file_name=${FINAL_BACKUP_DIR}"${backup_date}_${db_host}_${db_port}_${db}".backup
-
-        if ! pg_dump -Fc -h "$db_host" -p "$db_port" -U postgres "$db" -f ${backup_file_name}.in_progress; then
-            echo "[!!ERROR!!] Failed to produce custom backup database $db"
-        else
-            mv ${backup_file_name}.in_progress ${backup_file_name}
-        fi
-    done
-
-    echo -e "\nAll database backups complete!"
+    if ! pg_dump -Fc -h "$db_host" -p "$db_port" -U postgres plyo -f ${backup_file_path}.in_progress; then
+        echo "[!!ERROR!!] Failed to produce custom backup database plyo"
+    else
+        mv ${backup_file_path}.in_progress ${backup_file_path}
+        echo -e "\nDatabase backup complete!"
+    fi
 }
 
 function dump_database()
@@ -60,32 +41,37 @@ function dump_database()
 
     # MONTHLY BACKUPS
 
-    DAY_OF_MONTH=`date +%d`
-
-    if [ ${DAY_OF_MONTH} -eq 1 ];
+    local day_of_month=`date +%d`
+    if [ ${day_of_month} -eq 1 ];
     then
-        # Delete all expired monthly directories
-        find ${BACKUP_DIR} -maxdepth 1 -name "*-${db_host}-${db_port}-monthly" -exec rm -rf '{}' ';'
+        # Delete all expired monthly backups
+        local suffix="-${db_host}-${db_port}-monthly"
+        local days_to_keep_monthly_backup=`expr $(( ${MONTHS_TO_KEEP_MONTHLY} * 30 ))`
+        find ${BACKUP_DIR} -maxdepth 1 -mtime +${days_to_keep_monthly_backup} -name "*${suffix}" -exec rm -rf '{}' ';'
 
-        perform_backups "-${db_host}-${db_port}-monthly" ${db_host} ${db_port}
+        perform_backups ${suffix} ${db_host} ${db_port}
 
         return 0;
     fi
 
     # WEEKLY BACKUPS
 
-    DAY_OF_WEEK=`date +%u` #1-7 (Monday-Sunday)
-    EXPIRED_DAYS=`expr $(( ($WEEKS_TO_KEEP * 7) + 1 ))`
+    local backup_time=`date +%H:%M`
 
-    if [ ${DAY_OF_WEEK} = ${DAY_OF_WEEK_TO_KEEP} ];
+    local day_of_week=`date +%u` #1-7 (Monday-Sunday)
+    if [ ${day_of_week} = ${DAY_OF_WEEK_TO_KEEP} ];
     then
-        # Delete all expired weekly directories
-        find ${BACKUP_DIR} -maxdepth 1 -mtime +${EXPIRED_DAYS} -name "*-${db_host}-${db_port}-weekly" -exec rm -rf '{}' ';'
+        # Delete all expired weekly backups
+        local days_to_keep_weekly_backups=`expr $(( (${WEEKS_TO_KEEP_WEEKLY} * 7) + 1 ))`
+        local suffix="-${db_host}-${db_port}-weekly"
+        find ${BACKUP_DIR} -maxdepth 1 -mtime +${days_to_keep_weekly_backups} -name "*${suffix}" -exec rm -rf '{}' ';'
 
-        perform_backups "-${db_host}-${db_port}-weekly" ${db_host} ${db_port}
+        perform_backups ${suffix} ${db_host} ${db_port}
+
+        # if weekly backups already exists need to try perform hourly backup
         backups_result=$?
         if [ "$backups_result" -eq ${SKIPPING} ]; then
-            perform_backups "-${db_host}-${db_port}-hourly-`date +\%H:\%M`" ${db_host} ${db_port}
+            perform_backups "-${backup_time}-${db_host}-${db_port}-hourly" ${db_host} ${db_port}
         fi
 
         return 0;
@@ -93,14 +79,14 @@ function dump_database()
 
     # DAILY AND HOURLY BACKUPS
 
-    # Delete daily and hourly backups 7 days old or more
-    find ${BACKUP_DIR} -maxdepth 1 -mtime +${DAYS_TO_KEEP} -name "*-${db_host}-${db_port}-daily" -exec rm -rf '{}' ';'
-    find ${BACKUP_DIR} -maxdepth 1 -mtime +${DAYS_TO_KEEP} -name "*-${db_host}-${db_port}-hourly-*" -exec rm -rf '{}' ';'
+    # Delete expired daily and hourly backups
+    find ${BACKUP_DIR} -maxdepth 1 -mtime +${DAYS_TO_KEEP_DAYLY} -name "*-${db_host}-${db_port}-daily" -exec rm -rf '{}' ';'
+    find ${BACKUP_DIR} -maxdepth 1 -mtime +${DAYS_TO_KEEP_HOURLY} -name "*-${db_host}-${db_port}-hourly" -exec rm -rf '{}' ';'
 
     perform_backups "-${db_host}-${db_port}-daily" ${db_host} ${db_port}
     backups_result=$?
     if [ "$backups_result" -eq ${SKIPPING} ]; then
-        perform_backups "-${db_host}-${db_port}-hourly-`date +\%H:\%M`" ${db_host} ${db_port}
+        perform_backups "-${backup_time}-${db_host}-${db_port}-hourly" ${db_host} ${db_port}
     fi
 }
 
