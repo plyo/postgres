@@ -18,7 +18,7 @@ backups:
     - DAYS_TO_KEEP_HOURLY=1
 
     # Number of days to keep daily backups
-    - DAYS_TO_KEEP_DAYLY=7
+    - DAYS_TO_KEEP_DAILY=7
 
     # How many weeks to keep weekly backups
     - WEEKS_TO_KEEP_WEEKLY=4

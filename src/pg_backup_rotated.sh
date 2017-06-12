@@ -80,7 +80,7 @@ function dump_database()
     # DAILY AND HOURLY BACKUPS
 
     # Delete expired daily and hourly backups
-    find ${BACKUP_DIR} -maxdepth 1 -mtime +${DAYS_TO_KEEP_DAYLY} -name "*-${db_host}-${db_port}-daily" -exec rm -rf '{}' ';'
+    find ${BACKUP_DIR} -maxdepth 1 -mtime +${DAYS_TO_KEEP_DAILY} -name "*-${db_host}-${db_port}-daily" -exec rm -rf '{}' ';'
     find ${BACKUP_DIR} -maxdepth 1 -mtime +${DAYS_TO_KEEP_HOURLY} -name "*-${db_host}-${db_port}-hourly" -exec rm -rf '{}' ';'
 
     perform_backups "-${db_host}-${db_port}-daily" ${db_host} ${db_port}
