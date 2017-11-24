@@ -14,8 +14,8 @@ echo "Searching existing user";
 userExists=`psql --username postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='plyo'"`
 if [ -z "$userExists" ]; then
     echo "creating DB and user plyo..."
-    su - postgres -c "createuser plyo"
-    su - postgres -c "createdb --owner=plyo plyo"
+    createuser plyo
+    createdb --owner=plyo plyo
     echo "User and DB creation completed successfully"
 fi
 
@@ -23,7 +23,7 @@ echo "Searching for app user";
 appUserExists=`psql --username postgres -tAc "SELECT 1 FROM pg_roles WHERE rolname='app'"`
 if [ -z "$appUserExists" ]; then
     echo "creating user app..."
-    su - postgres -c "createuser app"
+    createuser app
 fi
 
 # add app user to plyo group to set default privileges for new tables
