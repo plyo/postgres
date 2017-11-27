@@ -1,7 +1,3 @@
-FROM postgres:9.5
-
-# Install nc for healthchecking
-RUN apt-get update && apt-get install -y netcat
-
+FROM postgres:9.5.10
 ADD docker-entrypoint-initdb.d/* /docker-entrypoint-initdb.d/
-HEALTHCHECK --interval=5s --timeout=3s CMD nc -z localhost 5432
+HEALTHCHECK --interval=5s --timeout=3s CMD pg_isready -d plyo -U postgres
