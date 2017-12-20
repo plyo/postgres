@@ -4,10 +4,6 @@
 
 echo "Running backups..."
 
-###########################
-#### START THE BACKUPS ####
-###########################
-
 SKIPPING=1
 
 function perform_backups()
@@ -45,13 +41,11 @@ function dump_database()
     if [ ${day_of_month} -eq 1 ];
     then
         # Delete all expired monthly backups
-        local suffix="-${db_host}-${db_port}-monthly"
+        local suffix="-${db_host}-${db_port}-monthly.backup"
         local days_to_keep_monthly_backup=`expr $(( ${MONTHS_TO_KEEP_MONTHLY} * 30 ))`
         find ${BACKUP_DIR} -maxdepth 1 -mtime +${days_to_keep_monthly_backup} -name "*${suffix}" -exec rm -rf '{}' ';'
 
         perform_backups ${suffix} ${db_host} ${db_port}
-
-        return 0;
     fi
 
     # WEEKLY BACKUPS
@@ -63,7 +57,7 @@ function dump_database()
     then
         # Delete all expired weekly backups
         local days_to_keep_weekly_backups=`expr $(( (${WEEKS_TO_KEEP_WEEKLY} * 7) + 1 ))`
-        local suffix="-${db_host}-${db_port}-weekly"
+        local suffix="-${db_host}-${db_port}-weekly.backup"
         find ${BACKUP_DIR} -maxdepth 1 -mtime +${days_to_keep_weekly_backups} -name "*${suffix}" -exec rm -rf '{}' ';'
 
         perform_backups ${suffix} ${db_host} ${db_port}
@@ -80,8 +74,15 @@ function dump_database()
     # DAILY AND HOURLY BACKUPS
 
     # Delete expired daily and hourly backups
-    find ${BACKUP_DIR} -maxdepth 1 -mtime +${DAYS_TO_KEEP_DAILY} -name "*-${db_host}-${db_port}-daily" -exec rm -rf '{}' ';'
-    find ${BACKUP_DIR} -maxdepth 1 -mtime +${DAYS_TO_KEEP_HOURLY} -name "*-${db_host}-${db_port}-hourly" -exec rm -rf '{}' ';'
+    find ${BACKUP_DIR} \
+      -maxdepth 1 -mtime +${DAYS_TO_KEEP_DAILY} \
+      -name "*-${db_host}-${db_port}-daily.backup" \
+      -exec rm -rf '{}' ';'
+
+    find ${BACKUP_DIR} \
+      -maxdepth 1 -mtime +${DAYS_TO_KEEP_HOURLY} \
+      -name "*-${db_host}-${db_port}-hourly.backup" \
+      -exec rm -rf '{}' ';'
 
     perform_backups "-${db_host}-${db_port}-daily" ${db_host} ${db_port}
     backups_result=$?
