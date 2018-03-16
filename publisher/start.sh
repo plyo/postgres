@@ -5,18 +5,7 @@ docker pull plyo/postgres:9.5.10-1.0.1
 docker run --name plyo_postgres -d -e POSTGRES_PASS -e PLYO_PASS -e APP_PASS \
 -v $PUBLISHER_DIR/restore.sh:/restore.sh \
 -v $DUMPS_DIR:/files \
--p 127.0.0.1:5432:5432 \
 plyo/postgres:9.5.10-1.0.1
-
-for i in `seq 1 15`
-do
-    # if db is started pg_ctl status should return something like 'single-user server is running (PID: 68)'
-    case $(docker exec -u postgres plyo_postgres pg_ctl status) in
-        *PID* ) break ;;
-    esac
-    echo -n .
-    sleep 1
-done
 
 docker exec plyo_postgres mkdir /dumps
 backup_date=`date +%Y-%m-%d-%H_00`
