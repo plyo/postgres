@@ -1,15 +1,15 @@
 version: '2'
 services:
-  test:
+  publisher:
     build: .
     working_dir: /usr/src/app
     environment:
-      - DOCKERHUB_LOGIN=balakirevv
-      - DOCKERHUB_PASS=dkflbvbh1979
+      - DOCKERHUB_LOGIN
+      - DOCKERHUB_PASS
       - APP_PASS=password
       - PLYO_PASS=password
       - POSTGRES_PASS=password
-      - PUBLISHER_DIR=/home/vova/projects/docker-dump
-      - DUMPS_DIR=/home/vova/projects/docker-dump/files
+      - PUBLISHER_DIR
+      - DUMPS_DIR
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
