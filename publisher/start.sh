@@ -17,8 +17,8 @@ then
 #    restore.sh will be executed at the moment of container's start
     docker exec plyo_postgres cp /restore.sh /docker-entrypoint-initdb.d/restore.sh
 
-    docker commit $(docker ps -f name=plyo_postgres -q) plyo/postgres:publisher
-    docker push plyo/postgres:publisher
+    docker commit $(docker ps -f name=plyo_postgres -q) plyo/postgres:data
+    docker push plyo/postgres:data
 else
     echo file "${backup_file}" is not found
 fi
