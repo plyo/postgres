@@ -7,7 +7,7 @@ docker run --name plyo_postgres -d -e POSTGRES_PASS -e PLYO_PASS -e APP_PASS \
 plyo/postgres:9.5.10-1.0.1
 
 docker exec plyo_postgres mkdir /dumps
-backup_date=`date +%Y-%m-%d-%H_00`
+backup_date=`date +%Y-%m-%d-%H:00`
 backup_file="${backup_date}"-preview-db-5432-hourly.backup
 
 if [ $(docker exec plyo_postgres test -e "/files/$backup_file" && echo $?) ];
