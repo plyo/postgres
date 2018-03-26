@@ -3,7 +3,6 @@ docker login -p=$DOCKERHUB_PASS -u=$DOCKERHUB_LOGIN
 docker pull plyo/postgres:9.5.10-1.0.1
 
 docker run --name plyo_postgres -d -e POSTGRES_PASS -e PLYO_PASS -e APP_PASS \
--v $PUBLISHER_DIR/restore.sh:/restore.sh \
 -v $DUMPS_DIR:/files \
 plyo/postgres:9.5.10-1.0.1
 
@@ -15,7 +14,8 @@ if [ $(docker exec plyo_postgres test -e "/files/$backup_file" && echo $?) ];
 then
     docker exec plyo_postgres cp /files/${backup_file} /dumps/plyo.backup
 #    restore.sh will be executed at the moment of container's start
-    docker exec plyo_postgres cp /restore.sh /docker-entrypoint-initdb.d/restore.sh
+    restore=`cat restore.sh`
+    docker exec plyo_postgres echo $restore > /docker-entrypoint-initdb.d/restore.sh
 
     docker commit $(docker ps -f name=plyo_postgres -q) plyo/postgres:publisher
     docker push plyo/postgres:publisher

@@ -9,7 +9,6 @@ services:
       - APP_PASS=password
       - PLYO_PASS=password
       - POSTGRES_PASS=password
-      - PUBLISHER_DIR
       - DUMPS_DIR
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
