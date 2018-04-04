@@ -9,6 +9,8 @@ services:
       - APP_PASS=password
       - PLYO_PASS=password
       - POSTGRES_PASS=password
+      - DUMP_NAME_SUFFIX=-preview-db.prod-dbs.default.plyo.in-5434-hourly.backup
+      - POSTGRES_IMAGE=plyo/postgres:9.5.10-1.0.1
       - DUMPS_DIR
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
