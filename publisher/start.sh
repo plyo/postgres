@@ -5,7 +5,7 @@ docker pull ${POSTGRES_IMAGE}
 docker run --name plyo_postgres -d -e POSTGRES_PASS -e PLYO_PASS -e APP_PASS \
 -v ${DUMPS_DIR}:/files \
 -w /docker-entrypoint-initdb.d \
-plyo/postgres:9.5.10-1.0.1
+${POSTGRES_IMAGE}
 
 docker exec plyo_postgres mkdir /dumps
 backup_date=`date +%Y-%m-%d-%H:00`
@@ -18,9 +18,11 @@ then
     # restore.sh will be executed at the moment of container's start
     (docker exec -i plyo_postgres sh -c "cat > restore.sh") < restore.sh
 
-    docker commit $(docker ps -f name=plyo_postgres -q) plyo/postgres:data
+    docker stop plyo_postgres
+    docker commit $(docker ps -a -f name=plyo_postgres -q) plyo/postgres:data
     docker push plyo/postgres:data
 else
+    docker stop plyo_postgres
     echo file ${backup_file} is not found
 fi
 
