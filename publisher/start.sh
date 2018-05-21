@@ -2,7 +2,7 @@
 docker login -p=${DOCKERHUB_PASS} -u=${DOCKERHUB_LOGIN}
 docker pull ${POSTGRES_IMAGE}
 
-docker run --name plyo_postgres -d -e POSTGRES_PASS -e PLYO_PASS -e APP_PASS \
+docker run --name plyo_postgres -d -e POSTGRES_PASS -e ADMIN_PASS -e APP_PASS \
 -v ${DUMPS_DIR}:/files \
 -w /docker-entrypoint-initdb.d \
 ${POSTGRES_IMAGE}

@@ -1,10 +1,11 @@
-postgres:
-  build: .
+db:
+  build: database
   environment:
     - POSTGRES_PASSWORD=password
+    - ADMIN_PASS=password
     - APP_PASS=password
-    - PLYO_PASS=password
+    - DB_NAME=plyo
   ports:
     - '5432:5432'
   volumes:
-    - './docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d'
+    - './database/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d'
