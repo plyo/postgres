@@ -1,0 +1,25 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: postgres:10.4
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Running postgres instance for tests
+          command: docker-compose up -d test
+      - run:
+          name: Waiting for DB to be ready
+          command: |
+            for i in `seq 1 60`;
+            do
+              nc -z localhost 5432 && echo Success && exit 0
+              echo -n .
+              sleep 1
+            done
+            echo Failed waiting for DB && exit 1
+      - run:
+          name: Running tests
+          command: docker-compose exec test make test

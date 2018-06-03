@@ -1,7 +1,7 @@
 #!/bin/bash
 
 adminPass=${ADMIN_PASS:-admin}
-appPass=${ADMIN_PASS:-app}
+appPass=${APP_PASS:-app}
 dbName=${DB_NAME:-default}
 
 # add app user to admin group to set default privileges for new tables
