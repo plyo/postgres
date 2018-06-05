@@ -3,7 +3,8 @@ x-db_defaults: &db_defaults
     - POSTGRES_PASSWORD=password
     - ADMIN_PASS=password
     - APP_PASS=password
-    - DB_NAME=plyo
+    - DB_NAME=test_db
+    - SCHEMA_NAME=test_schema
   ports:
     - '5432:5432'
 
