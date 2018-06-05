@@ -2,24 +2,30 @@ version: 2
 jobs:
   build:
     docker:
-      - image: postgres:10.4
+      - image: circleci/buildpack-deps:curl
     steps:
       - checkout
+      - run:
+          name: Install Docker Compose
+          command: |
+            curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
+            chmod +x ~/docker-compose
+            sudo mv ~/docker-compose /usr/local/bin/docker-compose
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
           name: Running postgres instance for tests
-          command: docker-compose up -d test
+          command: docker-compose up -d test-ci
       - run:
           name: Waiting for DB to be ready
           command: |
-            for i in `seq 1 60`;
+            for i in `seq 1 300`; # waiting 5 mins since building postgres first time can take significant time
             do
-              nc -z localhost 5432 && echo Success && exit 0
+              docker-compose exec test-ci psql --username postgres -c "\t" && echo DB Up && exit 0
               echo -n .
               sleep 1
             done
             echo Failed waiting for DB && exit 1
       - run:
           name: Running tests
-          command: docker-compose exec test make test
+          command: docker-compose exec test-ci make test

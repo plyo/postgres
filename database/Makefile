@@ -13,7 +13,7 @@ test/actual/users.out.sql: test/sql/users.sql
 
 .PHONY: update clean test clean_tests
 
-update: clean test/expected/users.out.sql
+reference: clean test/expected/users.out.sql
 
 test: clean_tests test/actual/users.out.sql
 	if ! colordiff test/expected/users.out.sql test/actual/users.out.sql;\
@@ -21,7 +21,7 @@ test: clean_tests test/actual/users.out.sql
 	exit 1; fi
 
 clean:
-	rm -rf test/expected/*.out.sql
+	rm -f test/expected/*.out.sql
 
 clean_tests:
 	rm -rf test/actual

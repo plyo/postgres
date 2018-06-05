@@ -19,5 +19,5 @@ Then run the tests with:
 To update reference output, run 
 
 ```bash
-> docker-compose exec test make update
+> docker-compose exec test make reference
 ```

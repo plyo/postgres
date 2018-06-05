@@ -25,3 +25,9 @@ services:
     volumes:
       - './database/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d'
       - './database:/app'
+
+  test-ci:
+    build:
+      context: database
+      target: test
+    <<: *db_defaults
