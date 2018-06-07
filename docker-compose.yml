@@ -1,11 +1,34 @@
-db:
-  build: database
+x-db_defaults: &db_defaults
   environment:
     - POSTGRES_PASSWORD=password
     - ADMIN_PASS=password
     - APP_PASS=password
-    - DB_NAME=plyo
+    - DB_NAME=test_db
+    - SCHEMA_NAME=test_schema
   ports:
     - '5432:5432'
-  volumes:
-    - './database/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d'
+
+version: '3.4'
+services:
+  db:
+    build:
+      context: database
+      target: db
+    volumes:
+      - './database/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d'
+    <<: *db_defaults
+
+  test:
+    build:
+      context: database
+      target: test
+    <<: *db_defaults
+    volumes:
+      - './database/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d'
+      - './database:/app'
+
+  test-ci:
+    build:
+      context: database
+      target: test
+    <<: *db_defaults
