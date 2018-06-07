@@ -3,22 +3,31 @@
 adminPass=${ADMIN_PASS:-admin}
 appPass=${APP_PASS:-app}
 dbName=${DB_NAME:-default}
+schemaName=${SCHEMA_NAME:-${dbName}}
 
 # add app user to admin group to set default privileges for new tables
 psql --username postgres <<-EOSQL
     create user admin with password '${adminPass}';
     create database ${dbName} with owner = 'admin';
-    create user app with password '${appPass}' in group admin;
 
-    revoke all on schema public from public;
-    grant select, insert, update, delete on all tables in schema public to app;
-    grant update on all sequences in schema public to app;
+    \connect ${dbName}
+    drop schema public;
 
-    alter default privileges for role admin in schema public
+    create schema ${schemaName};
+    set schema '${schemaName}';
+    grant all privileges on schema ${schemaName} to admin;
+
+    create user app with password '${appPass}';
+    grant usage on schema ${schemaName} to app;
+
+    grant select, insert, update, delete on all tables in schema ${schemaName} to app;
+    grant update on all sequences in schema ${schemaName} to app;
+
+    alter default privileges for role admin in schema ${schemaName}
     grant select, insert, update, delete on tables
     to app;
 
-    alter default privileges for role admin in schema public
+    alter default privileges for role admin in schema ${schemaName}
     grant update on sequences
     to app;
 
