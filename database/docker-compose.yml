@@ -12,6 +12,7 @@ version: '3.4'
 services:
   db:
     build:
+      context: .
       target: db
     volumes:
       - './database/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d'
@@ -19,6 +20,7 @@ services:
 
   test:
     build:
+      context: .
       target: test
     <<: *db_defaults
     volumes:
@@ -27,5 +29,6 @@ services:
 
   test-ci:
     build:
+      context: .
       target: test
     <<: *db_defaults
