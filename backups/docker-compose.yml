@@ -1,47 +1,49 @@
-backups:
-  build: .
-  environment:
-    # DBs to dump
-    - DB_CONFIG_1=postgres-1:5432:*:postgres:password
-    - DB_CONFIG_2=postgres-2:5432:*:postgres:password
-
-    # This dir will be created if it doesn't exist.  This must be writable by the user the script is
-    # running as.
-    - BACKUP_DIR=/backups/
-
-    # SETTINGS FOR ROTATED BACKUPS
-
-    # Which day to take the weekly backup from (1-7 = Monday-Sunday)
-    - DAY_OF_WEEK_TO_KEEP=5
-
-    # Number of hours to keep daily backups
-    - DAYS_TO_KEEP_HOURLY=1
-
-    # Number of days to keep daily backups
-    - DAYS_TO_KEEP_DAILY=7
-
-    # How many weeks to keep weekly backups
-    - WEEKS_TO_KEEP_WEEKLY=4
-
-    # How many months to keep monthly backups
-    - MONTHS_TO_KEEP_MONTHLY=6
-  volumes:
-    - ./backups/:/backups/
-    - ./src:/usr/src/app/
-  links:
-    - postgres-1
-    - postgres-2
-  entrypoint: ''
-  command: /usr/src/app/start.sh
-postgres-1:
-  image: 'plyo/postgres'
+x-db: &db
+  image: 'plyo/postgres:database'
   environment:
     - APP_PASS=password
     - PLYO_PASS=password
     - POSTGRES_PASSWORD=password
-postgres-2:
-  image: 'plyo/postgres'
-  environment:
-    - APP_PASS=password
-    - PLYO_PASS=password
-    - POSTGRES_PASSWORD=password
+    - DB_NAME=test-db
+
+version: '3.4'
+services:
+  backups:
+    build: .
+    environment:
+      # DBs to dump
+      - DB_CONFIG_1=postgres-1:5432:*:postgres:password
+      - DB_CONFIG_2=postgres-2:5432:*:postgres:password
+
+      # This dir will be created if it doesn't exist. This must be writable by the user the script is
+      # running as.
+      - BACKUP_DIR=/backups/
+
+      # SETTINGS FOR ROTATED BACKUPS
+
+      # Which day to take the weekly backup from (1-7 = Monday-Sunday)
+      - DAY_OF_WEEK_TO_KEEP=5
+
+      # Number of hours to keep daily backups
+      - DAYS_TO_KEEP_HOURLY=1
+
+      # Number of days to keep daily backups
+      - DAYS_TO_KEEP_DAILY=7
+
+      # How many weeks to keep weekly backups
+      - WEEKS_TO_KEEP_WEEKLY=4
+
+      # How many months to keep monthly backups
+      - MONTHS_TO_KEEP_MONTHLY=6
+    volumes:
+      - ./backups/:/backups/
+      - ./src:/usr/src/app/
+    depends_on:
+      - db-1
+      - db-2
+
+  db-1:
+    <<: *db
+
+  db-2:
+    <<: *db

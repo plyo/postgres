@@ -13,6 +13,7 @@ jobs:
             sudo mv ~/docker-compose /usr/local/bin/docker-compose
       - setup_remote_docker:
           docker_layer_caching: true
+      - run: cd database
       - run:
           name: Running postgres instance for tests
           command: docker-compose up -d test-ci
