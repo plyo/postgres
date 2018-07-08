@@ -5,6 +5,7 @@ x-db_defaults: &db_defaults
     - APP_PASS=password
     - DB_NAME=test_db
     - SCHEMA_NAME=test_schema
+    - PRIVATE_SCHEMA_NAME=test_schema_private
   ports:
     - '5432:5432'
 
@@ -24,8 +25,8 @@ services:
       target: test
     <<: *db_defaults
     volumes:
-      - './database/docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d'
-      - './database:/app'
+      - './docker-entrypoint-initdb.d:/docker-entrypoint-initdb.d'
+      - '.:/app'
 
   test-ci:
     build:

@@ -1,18 +1,33 @@
 version: 2
 jobs:
-  build:
+  checkout:
     docker:
       - image: circleci/buildpack-deps:curl
-    working_directory: ~/postgres/database
+    working_directory: ~/postgres
     steps:
       - checkout:
           path: ~/postgres
       - run:
           name: Install Docker Compose
           command: |
-            curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
-            chmod +x ~/docker-compose
-            sudo mv ~/docker-compose /usr/local/bin/docker-compose
+            curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/postgres/docker-compose
+            chmod +x ~/postgres/docker-compose
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  test-database:
+    docker:
+      - image: circleci/buildpack-deps:curl
+    working_directory: ~/postgres/database
+    steps:
+      - attach_workspace:
+          at: ~/postgres
+      - run:
+          name: Copy Docker Compose
+          command: |
+            sudo mv ~/postgres/docker-compose /usr/local/bin/docker-compose
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
@@ -31,3 +46,70 @@ jobs:
       - run:
           name: Running tests
           command: docker-compose exec test-ci make test
+
+  publish-database:
+    docker:
+      - image: circleci/buildpack-deps:curl
+    working_directory: ~/postgres/database
+    steps:
+      - attach_workspace:
+          at: ~/postgres
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Publish database to docker registry
+          command: |
+            IFS=- read deploy name <<< $CIRCLE_BRANCH
+            TAG=api-$name
+            docker build -t plyo/web:$TAG src/db
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push plyo/web:$TAG
+
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - checkout
+          filters:
+            tags:
+              only: /(database|publisher|backups)-.*/
+      - test-database:
+          requires:
+            - checkout
+      - publish-database:
+          requires:
+            - checkout
+          filters:
+            brancher:
+              ignore: /.*/
+            tags:
+              include: /.*/
+
+      - publish_db:
+          requires:
+            - checkout
+          filters:
+            branches:
+              only:
+                - /deploy-.*/
+      - publish_web:
+          requires:
+            - checkout
+          filters:
+            branches:
+              only:
+                - /deploy-.*/
+      - deploy:
+          requires:
+            - publish_web
+            - publish_db
+      - build:
+          requires:
+            - checkout
+          filters:
+            branches:
+              ignore:
+                - /deploy-.*/
+      - test:
+          requires:
+            - build

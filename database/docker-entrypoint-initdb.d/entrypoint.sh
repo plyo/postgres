@@ -4,6 +4,7 @@ adminPass=${ADMIN_PASS:-admin}
 appPass=${APP_PASS:-app}
 dbName=${DB_NAME:-default}
 schemaName=${SCHEMA_NAME:-${dbName}}
+privateSchemaName=${PRIVATE_SCHEMA_NAME:-${schemaName}_private}
 
 # add app user to admin group to set default privileges for new tables
 psql --username postgres <<-EOSQL
@@ -31,7 +32,8 @@ psql --username postgres <<-EOSQL
     grant update on sequences
     to app;
 
-    create extension pgcrypto;
+    create schema ${privateSchemaName};
+    create extension pgcrypto schema ${privateSchemaName};
 EOSQL
 
 echo "=> Done!"
