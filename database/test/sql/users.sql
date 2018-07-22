@@ -37,6 +37,9 @@ update users_test set col = 2 where col = 1;
 select * from users_test;
 delete from users_test;
 
+-- should be able to create a role
+create role test_role;
+
 -----------------------------
 -- viewpoint from app user --
 -----------------------------
@@ -77,6 +80,9 @@ update users_test set col = 2 where col = 1;
 select * from users_test;
 delete from users_test;
 
+-- should not be able to create a role
+create role test_role_1;
+
 -------------
 -- cleanup --
 -------------
@@ -84,3 +90,4 @@ delete from users_test;
 reset session authorization;
 drop table users_test;
 drop table test_schema_private.users_test_private;
+drop role test_role;
