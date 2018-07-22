@@ -33,6 +33,8 @@ psql --username postgres <<-EOSQL
     to app;
 
     create schema ${privateSchemaName};
+    grant all privileges on schema ${privateSchemaName} to admin;
+
     create extension pgcrypto schema ${privateSchemaName};
 EOSQL
 

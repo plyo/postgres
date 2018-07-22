@@ -26,6 +26,11 @@ create table users_test (
   col integer
 );
 
+-- should be able to create a new table in private schema
+create table test_schema_private.users_test_private (
+  col integer
+);
+
 -- should be able to use DML
 insert into users_test (col) values (1);
 update users_test set col = 2 where col = 1;
@@ -55,6 +60,17 @@ drop table users_test;
 alter table users_test
   add column col2 integer;
 
+-- should not be able to create a new table in private schema
+create table test_schema_private.users_test_private_2 (
+  col integer
+);
+
+-- should not be able to use DML with private schema
+insert into test_schema_private.users_test_private (col) values (1);
+update test_schema_private.users_test_private set col = 2 where col = 1;
+select * from test_schema_private.users_test_private;
+delete from test_schema_private.users_test_private;
+
 -- should be able to use DML
 insert into users_test (col) values (1);
 update users_test set col = 2 where col = 1;
@@ -67,3 +83,4 @@ delete from users_test;
 
 reset session authorization;
 drop table users_test;
+drop table test_schema_private.users_test_private;
