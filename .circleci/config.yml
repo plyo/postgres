@@ -57,59 +57,36 @@ jobs:
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
-          name: Publish database to docker registry
+          name: Build and push docker image
           command: |
-            IFS=- read deploy name <<< $CIRCLE_BRANCH
-            TAG=api-$name
-            docker build -t plyo/web:$TAG src/db
+            image_name=plyo/postgres:${CIRCLE_TAG}
+            docker build -t ${image_name} .
             docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push plyo/web:$TAG
+            docker push ${image_name}
 
 workflows:
   version: 2
   test_and_deploy:
     jobs:
-      - checkout
+      - checkout:
           filters:
             tags:
               only: /(database|publisher|backups)-.*/
       - test-database:
           requires:
             - checkout
+          filters:
+            tags:
+              only:
+                - /.*/
       - publish-database:
           requires:
             - checkout
-          filters:
-            brancher:
-              ignore: /.*/
-            tags:
-              include: /.*/
-
-      - publish_db:
-          requires:
-            - checkout
-          filters:
-            branches:
-              only:
-                - /deploy-.*/
-      - publish_web:
-          requires:
-            - checkout
-          filters:
-            branches:
-              only:
-                - /deploy-.*/
-      - deploy:
-          requires:
-            - publish_web
-            - publish_db
-      - build:
-          requires:
-            - checkout
+            - test-database
           filters:
             branches:
               ignore:
-                - /deploy-.*/
-      - test:
-          requires:
-            - build
+                - /.*/
+            tags:
+              only:
+                - /.*/
