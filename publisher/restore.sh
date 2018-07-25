@@ -1,1 +1,1 @@
-pg_restore /dumps/plyo.backup -U postgres -d plyo
+pg_restore /dumps/db.backup -U postgres -d ${DB_NAME}
