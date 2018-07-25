@@ -1,19 +1,23 @@
 x-db: &db
-  image: 'plyo/postgres:database'
+  image: 'plyo/postgres:database-10.4-3.2.0'
   environment:
     - APP_PASS=password
-    - PLYO_PASS=password
+    - ADMIN_PASS=password
     - POSTGRES_PASSWORD=password
-    - DB_NAME=test-db
+    - DB_NAME=test_db
+    - SCHEMA_NAME=test_schema
 
 version: '3.4'
 services:
   backups:
     build: .
     environment:
+      # DB to dump
+      - DB_NAME=test_db
+
       # DBs to dump
-      - DB_CONFIG_1=postgres-1:5432:*:postgres:password
-      - DB_CONFIG_2=postgres-2:5432:*:postgres:password
+      - DB_CONFIG_1=db-1:5432:*:postgres:password
+      - DB_CONFIG_2=db-2:5432:*:postgres:password
 
       # This dir will be created if it doesn't exist. This must be writable by the user the script is
       # running as.

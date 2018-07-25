@@ -20,10 +20,10 @@ function perform_backups()
         return ${SKIPPING}
     fi
 
-    echo -e "\n\nPerforming custom backup for plyo database to ${backup_file_path}"
+    echo -e "\n\nPerforming custom backup for ${DB_NAME} database to ${backup_file_path}"
 
-    if ! pg_dump -Fc -h "$db_host" -p "$db_port" -U postgres plyo -f ${backup_file_path}.in_progress; then
-        echo "[!!ERROR!!] Failed to produce custom backup database plyo"
+    if ! pg_dump -Fc -h "$db_host" -p "$db_port" -U postgres ${DB_NAME} -f ${backup_file_path}.in_progress; then
+        echo "[!!ERROR!!] Failed to produce custom backup database ${DB_NAME}"
     else
         mv ${backup_file_path}.in_progress ${backup_file_path}
         echo -e "\nDatabase backup complete!"
