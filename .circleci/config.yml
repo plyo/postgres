@@ -1,16 +1,33 @@
 version: 2
 jobs:
-  build:
+  checkout:
     docker:
       - image: circleci/buildpack-deps:curl
+    working_directory: ~/postgres
     steps:
-      - checkout
+      - checkout:
+          path: ~/postgres
       - run:
           name: Install Docker Compose
           command: |
-            curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/docker-compose
-            chmod +x ~/docker-compose
-            sudo mv ~/docker-compose /usr/local/bin/docker-compose
+            curl -L https://github.com/docker/compose/releases/download/1.19.0/docker-compose-`uname -s`-`uname -m` > ~/postgres/docker-compose
+            chmod +x ~/postgres/docker-compose
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
+  test-database:
+    docker:
+      - image: circleci/buildpack-deps:curl
+    working_directory: ~/postgres/database
+    steps:
+      - attach_workspace:
+          at: ~/postgres
+      - run:
+          name: Copy Docker Compose
+          command: |
+            sudo mv ~/postgres/docker-compose /usr/local/bin/docker-compose
       - setup_remote_docker:
           docker_layer_caching: true
       - run:
@@ -29,3 +46,47 @@ jobs:
       - run:
           name: Running tests
           command: docker-compose exec test-ci make test
+
+  publish-database:
+    docker:
+      - image: circleci/buildpack-deps:curl
+    working_directory: ~/postgres/database
+    steps:
+      - attach_workspace:
+          at: ~/postgres
+      - setup_remote_docker:
+          docker_layer_caching: true
+      - run:
+          name: Build and push docker image
+          command: |
+            image_name=plyo/postgres:${CIRCLE_TAG}
+            docker build -t ${image_name} .
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
+            docker push ${image_name}
+
+workflows:
+  version: 2
+  test_and_deploy:
+    jobs:
+      - checkout:
+          filters:
+            tags:
+              only: /(database|publisher|backups)-.*/
+      - test-database:
+          requires:
+            - checkout
+          filters:
+            tags:
+              only:
+                - /.*/
+      - publish-database:
+          requires:
+            - checkout
+            - test-database
+          filters:
+            branches:
+              ignore:
+                - /.*/
+            tags:
+              only:
+                - /.*/

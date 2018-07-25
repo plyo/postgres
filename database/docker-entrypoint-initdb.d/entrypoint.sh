@@ -4,10 +4,11 @@ adminPass=${ADMIN_PASS:-admin}
 appPass=${APP_PASS:-app}
 dbName=${DB_NAME:-default}
 schemaName=${SCHEMA_NAME:-${dbName}}
+privateSchemaName=${PRIVATE_SCHEMA_NAME:-${schemaName}_private}
 
 # add app user to admin group to set default privileges for new tables
 psql --username postgres <<-EOSQL
-    create user admin with password '${adminPass}';
+    create user admin with createrole password '${adminPass}';
     create database ${dbName} with owner = 'admin';
 
     \connect ${dbName}
@@ -31,7 +32,10 @@ psql --username postgres <<-EOSQL
     grant update on sequences
     to app;
 
-    create extension pgcrypto;
+    create schema ${privateSchemaName};
+    grant all privileges on schema ${privateSchemaName} to admin;
+
+    create extension pgcrypto schema ${privateSchemaName};
 EOSQL
 
 echo "=> Done!"

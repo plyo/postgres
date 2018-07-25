@@ -1,4 +1,4 @@
-version: '2'
+version: '3.4'
 services:
   publisher:
     build: .
@@ -9,8 +9,8 @@ services:
       - APP_PASS=password
       - ADMIN_PASS=password
       - POSTGRES_PASS=password
-      - DUMP_NAME_SUFFIX=-preview-db.prod-dbs.default.plyo.in-5434-hourly.backup
-      - POSTGRES_IMAGE=plyo/postgres:9.5.10-1.0.1
+      - DUMP_NAME_SUFFIX=-prod-db-5432-hourly.backup
+      - POSTGRES_IMAGE=plyo/postgres:database
       - DUMPS_DIR
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
