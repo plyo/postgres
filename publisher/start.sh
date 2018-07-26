@@ -16,7 +16,7 @@ then
     docker exec publishing_db_container cp /files/${backup_file} /dumps/db.backup
 
     # restore.sh will be executed at the moment of container's start
-    (docker exec -i publishing_db_container sh -c "cat > restore.sh") < restore.sh
+    echo "pg_restore /dumps/db.backup -U postgres -d ${DB_NAME}" | (docker exec -i publishing_db_container sh -c "cat > restore.sh")
 
     docker stop publishing_db_container
     docker commit $(docker ps -a -f name=publishing_db_container -q) ${DESTINATION_DOCKER_IMAGE}
