@@ -1,16 +1,15 @@
-version: '2'
+version: '3.4'
 services:
   publisher:
     build: .
     working_dir: /usr/src/app
     environment:
+      - DB_NAME=test_db
       - DOCKERHUB_LOGIN
       - DOCKERHUB_PASS
-      - APP_PASS=password
-      - PLYO_PASS=password
-      - POSTGRES_PASS=password
-      - DUMP_NAME_SUFFIX=-preview-db.prod-dbs.default.plyo.in-5434-hourly.backup
-      - POSTGRES_IMAGE=plyo/postgres:9.5.10-1.0.1
+      - DUMP_NAME_SUFFIX=-prod-db-5432-hourly.backup
+      - POSTGRES_IMAGE=plyo/postgres:database-10.4-3.1.0
       - DUMPS_DIR
+      - DESTINATION_DOCKER_IMAGE=plyo/db:data
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
