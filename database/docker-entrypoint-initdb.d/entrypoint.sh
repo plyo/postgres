@@ -1,7 +1,7 @@
 #!/bin/bash
 
-adminPass=${ADMIN_PASS:-admin}
-appPass=${APP_PASS:-app}
+adminPass=${ADMIN_PASSWORD:-admin}
+appPass=${APP_PASSWORD:-app}
 dbName=${DB_NAME:-default}
 schemaName=${SCHEMA_NAME:-${dbName}}
 privateSchemaName=${PRIVATE_SCHEMA_NAME:-${schemaName}_private}

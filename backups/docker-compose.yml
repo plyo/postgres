@@ -1,8 +1,8 @@
 x-db: &db
   image: 'plyo/postgres:database-10.4-3.2.0'
   environment:
-    - APP_PASS=password
-    - ADMIN_PASS=password
+    - APP_PASSWORD=password
+    - ADMIN_PASSWORD=password
     - POSTGRES_PASSWORD=password
     - DB_NAME=test_db
     - SCHEMA_NAME=test_schema
