@@ -68,6 +68,7 @@ jobs:
 
 workflows:
   version: 2
+
   database:
     jobs:
       - checkout:
@@ -89,6 +90,7 @@ workflows:
               ignore: /.*/
             tags:
               only: /.*/
+
   publisher_and_backups:
     jobs:
       - checkout:
