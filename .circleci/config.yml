@@ -47,10 +47,10 @@ jobs:
           name: Running tests
           command: docker-compose exec test-ci make test
 
-  publish-database:
+  publish:
     docker:
       - image: circleci/buildpack-deps:curl
-    working_directory: ~/postgres/database
+    working_directory: ~/postgres
     steps:
       - attach_workspace:
           at: ~/postgres
@@ -59,6 +59,8 @@ jobs:
       - run:
           name: Build and push docker image
           command: |
+            IFS=- read service mics <<< ${CIRCLE_TAG}
+            cd ${service}
             image_name=plyo/postgres:${CIRCLE_TAG}
             docker build -t ${image_name} .
             docker login -u $DOCKER_USER -p $DOCKER_PASS
@@ -66,27 +68,38 @@ jobs:
 
 workflows:
   version: 2
-  test_and_deploy:
+  database:
     jobs:
       - checkout:
           filters:
             tags:
-              only: /(database|publisher|backups)-.*/
+              only: /database-.*/
       - test-database:
           requires:
             - checkout
           filters:
             tags:
-              only:
-                - /.*/
-      - publish-database:
+              only: /.*/
+      - publish:
           requires:
             - checkout
             - test-database
           filters:
             branches:
-              ignore:
-                - /.*/
+              ignore: /.*/
             tags:
-              only:
-                - /.*/
+              only: /.*/
+  publisher_and_backups:
+    jobs:
+      - checkout:
+          filters:
+            tags:
+              only: /(publisher|backups)-.*/
+            branches:
+              ignore: /.*/
+      - publish:
+          requires:
+            - checkout
+          filters:
+            tags:
+              only: /.*/

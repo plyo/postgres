@@ -14,7 +14,6 @@ RUN apk --update add curl \
 
 WORKDIR /usr/src/app
 COPY ./start.sh /usr/src/app/start.sh
-COPY ./restore.sh /usr/src/app/restore.sh
 
 RUN chmod 755 start.sh
 CMD sh start.sh
