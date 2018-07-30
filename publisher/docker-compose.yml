@@ -13,3 +13,4 @@ services:
       - DESTINATION_DOCKER_IMAGE=plyo/db:data
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+      - ./start.sh:/usr/src/app/start.sh

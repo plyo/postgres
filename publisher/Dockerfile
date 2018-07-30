@@ -16,4 +16,4 @@ WORKDIR /usr/src/app
 COPY ./start.sh /usr/src/app/start.sh
 
 RUN chmod 755 start.sh
-CMD sh start.sh
+CMD ./start.sh
