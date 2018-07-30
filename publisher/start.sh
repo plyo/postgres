@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/usr/bin/env sh
 docker login -p=${DOCKERHUB_PASS} -u=${DOCKERHUB_LOGIN}
 docker pull ${POSTGRES_IMAGE}
 
