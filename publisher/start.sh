@@ -2,9 +2,10 @@
 docker login -p=${DOCKERHUB_PASS} -u=${DOCKERHUB_LOGIN}
 docker pull ${POSTGRES_IMAGE}
 
-docker run --name publishing_db_container -d \
+docker run --name publishing_db_container -dit \
 -v ${DUMPS_DIR}:/files \
 -w /docker-entrypoint-initdb.d \
+--entrypoint sh \
 ${POSTGRES_IMAGE}
 
 docker exec publishing_db_container mkdir /dumps
