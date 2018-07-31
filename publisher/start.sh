@@ -5,8 +5,7 @@ docker pull ${POSTGRES_IMAGE}
 docker run --name publishing_db_container -dit \
 -v ${DUMPS_DIR}:/files \
 -w /docker-entrypoint-initdb.d \
---entrypoint sh \
-${POSTGRES_IMAGE}
+${POSTGRES_IMAGE} sh
 
 docker exec publishing_db_container mkdir /dumps
 backup_date=`date +%Y-%m-%d-%H:00`
