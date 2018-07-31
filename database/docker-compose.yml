@@ -1,6 +1,8 @@
 x-db_defaults: &db_defaults
   environment:
     - POSTGRES_PASSWORD=password
+    - ADMIN_ROLE_NAME=admin
+    - APP_ROLE_NAME=app
     - ADMIN_PASSWORD=password
     - APP_PASSWORD=password
     - DB_NAME=test_db

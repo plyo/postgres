@@ -3,8 +3,8 @@ Docker image for Plyo database
 
 This image runs PostgreSQL server, creates a database which name is specified in `DB_NAME` env var and number of users: 
 - `postgres` - root for PostgreSQL
-- `admin` - your db owner, this user has full access to the created database and can be used for migrations
-- `app` - user which can't modify schema of the db 
+- `admin` - your db owner, this user has full access to the created database and can be used for migrations. You can adjust user name with ADMIN_ROLE_NAME env var
+- `app` - user which can't modify schema of the db. You can adjust user name with APP_ROLE_NAME env var
 
 To run it locally just use `docker-compose`:
 
