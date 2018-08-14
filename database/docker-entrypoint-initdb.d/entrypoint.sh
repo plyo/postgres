@@ -18,7 +18,7 @@ psql --username postgres <<-EOSQL
 
     create schema ${schemaName};
     set schema '${schemaName}';
-    grant all privileges on schema ${schemaName} to ${adminRole};
+    grant all privileges on schema ${schemaName} to ${adminRole} with grant option;
 
     create user ${appRole} with password '${appPass}';
     grant usage on schema ${schemaName} to ${appRole};
@@ -35,7 +35,7 @@ psql --username postgres <<-EOSQL
     to ${appRole};
 
     create schema ${privateSchemaName};
-    grant all privileges on schema ${privateSchemaName} to ${adminRole};
+    grant all privileges on schema ${privateSchemaName} to ${adminRole} with grant option;
 
     create extension pgcrypto schema ${privateSchemaName};
 EOSQL
