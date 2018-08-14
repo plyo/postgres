@@ -10,7 +10,7 @@ privateSchemaName=${PRIVATE_SCHEMA_NAME:-${schemaName}_private}
 
 # add app user to admin group to set default privileges for new tables
 psql --username postgres <<-EOSQL
-    create user ${adminRole} with createrole password '${adminPass}';
+    create user ${adminRole} with createrole password '${adminPass}' with grant option;
     create database ${dbName} with owner = '${adminRole}';
 
     \connect ${dbName}
