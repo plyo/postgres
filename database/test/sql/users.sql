@@ -83,6 +83,16 @@ delete from users_test;
 -- should not be able to create a role
 create role test_role_1;
 
+-- should have pgcrypto extension installed
+select count(*)
+from pg_extension
+where extname = 'pgcrypto';
+
+-- should have ltree extension installed
+select count(*)
+from pg_extension
+where extname = 'ltree';
+
 -------------
 -- cleanup --
 -------------

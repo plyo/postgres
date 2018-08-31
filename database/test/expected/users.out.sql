@@ -111,6 +111,24 @@ DELETE 1
 -- should not be able to create a role
 create role test_role_1;
 psql:test/sql/users.sql:84: ERROR:  permission denied to create role
+-- should have pgcrypto extension installed
+select count(*)
+from pg_extension
+where extname = 'pgcrypto';
+ count 
+-------
+     1
+(1 row)
+
+-- should have ltree extension installed
+select count(*)
+from pg_extension
+where extname = 'ltree';
+ count 
+-------
+     1
+(1 row)
+
 -------------
 -- cleanup --
 -------------
