@@ -8,6 +8,13 @@ dbName=${DB_NAME:-default}
 schemaName=${SCHEMA_NAME:-${dbName}}
 privateSchemaName=${PRIVATE_SCHEMA_NAME:-${schemaName}_private}
 
+creating_extensions_sql=''
+for extension in ${EXTENSIONS//,/ }
+do
+  creating_extensions_sql="${creating_extensions_sql}
+    create extension ${extension} schema ${privateSchemaName};"
+done
+
 # add app user to admin group to set default privileges for new tables
 psql --username postgres <<-EOSQL
     create user ${adminRole} with createrole password '${adminPass}';
@@ -37,7 +44,7 @@ psql --username postgres <<-EOSQL
     create schema ${privateSchemaName};
     grant all privileges on schema ${privateSchemaName} to ${adminRole} with grant option;
 
-    create extension pgcrypto schema ${privateSchemaName};
+    ${creating_extensions_sql}
 EOSQL
 
 echo "=> Done!"
