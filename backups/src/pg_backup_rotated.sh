@@ -14,6 +14,7 @@ function perform_backups()
 
     backup_date=`date +%Y-%m-%d`
     backup_file_path="${BACKUP_DIR}${backup_date}${suffix}".backup
+    backup_roles_file_path="${backup_file_path}_roles.out"
 
     if [ -e "${backup_file_path}" ]; then
         echo "${backup_file_path} already exists, skipping dump"
@@ -25,6 +26,7 @@ function perform_backups()
     if ! pg_dump -Fc -h "$db_host" -p "$db_port" -U postgres ${DB_NAME} -f ${backup_file_path}.in_progress; then
         echo "[!!ERROR!!] Failed to produce custom backup database ${DB_NAME}"
     else
+        pg_dumpall -r -h "$db_host" -p "$db_port" -U postgres -f ${backup_roles_file_path}
         mv ${backup_file_path}.in_progress ${backup_file_path}
         echo -e "\nDatabase backup complete!"
     fi
