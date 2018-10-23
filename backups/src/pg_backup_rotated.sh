@@ -26,8 +26,10 @@ function perform_backups()
     if ! pg_dump -Fc -h "$db_host" -p "$db_port" -U postgres ${DB_NAME} -f ${backup_file_path}.in_progress; then
         echo "[!!ERROR!!] Failed to produce custom backup database ${DB_NAME}"
     else
-        pg_dumpall -r -h "$db_host" -p "$db_port" -U postgres -f ${backup_roles_file_path}
+        pg_dumpall -r -h "$db_host" -p "$db_port" -U postgres -f ${backup_roles_file_path}.in_progress
+        cat ${backup_roles_file_path}.in_progress | grep -v ${IGNORE_DUMP_ROLES} > "${backup_roles_file_path}"
         mv ${backup_file_path}.in_progress ${backup_file_path}
+        rm -f ${backup_roles_file_path}.in_progress
         echo -e "\nDatabase backup complete!"
     fi
 }
