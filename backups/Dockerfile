@@ -1,5 +1,4 @@
-FROM alpine
-RUN apk add --update bash postgresql && rm -rf /var/cache/apk/*
+FROM postgres:10.4-alpine
 
 VOLUME /backups
 
