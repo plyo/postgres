@@ -14,16 +14,27 @@ backup_roles_file=${backup_file}_roles.out
 
 if [ $(docker exec publishing_db_container test -e "/files/$backup_file" && echo $?) ];
 then
-    docker exec publishing_db_container cp /files/${backup_file} /dumps/db.backup
+    # we preparing 2 docker images, one contains only needed roles - it's "empty" state of DB
+    # another one contains data and can be used by developer and tools running tests on real data
     docker exec publishing_db_container cp /files/${backup_roles_file} /dumps/db_roles.out
 
     # restore.sh will be executed at the moment of container's start
     cat <<-EORESTORE | (docker exec -i publishing_db_container sh -c "cat > restore.sh")
       psql -f /dumps/db_roles.out -U postgres
-      pg_restore /dumps/db.backup -U postgres -d ${DB_NAME}
 EORESTORE
 
     docker stop publishing_db_container
+    docker commit $(docker ps -a -f name=publishing_db_container -q) ${DESTINATION_DOCKER_IMAGE}-roles-only
+    docker push ${DESTINATION_DOCKER_IMAGE}-roles-only
+
+    docker start publishing_db_container
+    docker exec publishing_db_container cp /files/${backup_file} /dumps/db.backup
+
+    cat <<-EORESTORE | (docker exec -i publishing_db_container sh -c "cat >> restore.sh")
+      pg_restore /dumps/db.backup -U postgres -d ${DB_NAME}
+EORESTORE
+
+
     docker commit $(docker ps -a -f name=publishing_db_container -q) ${DESTINATION_DOCKER_IMAGE}
     docker push ${DESTINATION_DOCKER_IMAGE}
 else
