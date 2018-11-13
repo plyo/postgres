@@ -1,5 +1,5 @@
 #!/usr/bin/env sh
-docker login -p=${DOCKERHUB_PASS} -u=${DOCKERHUB_LOGIN}
+docker login -p=${DOCKERHUB_PASS} -u=${DOCKERHUB_LOGIN} registry.plyo.website
 docker pull ${POSTGRES_IMAGE}
 
 docker run --name publishing_db_container -d \
