@@ -34,6 +34,7 @@ EORESTORE
       pg_restore /dumps/db.backup -U postgres -d ${DB_NAME}
 EORESTORE
 
+    # TODO: sanitize DB here
 
     docker commit $(docker ps -a -f name=publishing_db_container -q) ${DESTINATION_DOCKER_IMAGE}
     docker push ${DESTINATION_DOCKER_IMAGE}
