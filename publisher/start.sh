@@ -34,8 +34,8 @@ EORESTORE
     -v ${DUMPS_DIR}:/files -v ${SQL_DIR}:/sql \
     -e POSTGRES_DB=${DB_NAME} -e POSTGRES_PASSWORD= ${POSTGRES_IMAGE}
     db_initialized=0
-    # waiting 5 mins for sanitizing_db_container to be initialized
-    for i in `seq 1 300`;
+    # waiting 1 min for sanitizing_db_container to be initialized
+    for i in `seq 1 60`;
     do
       docker exec sanitizing_db_container psql -U postgres -c "\t" &> /dev/null && db_initialized=1 && break
       echo -n .
