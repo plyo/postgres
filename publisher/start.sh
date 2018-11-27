@@ -46,7 +46,7 @@ EORESTORE
 
     if [ "$db_initialized" -eq 0 ]
     then
-        echo "Sanitizing DB was not initialized after 5 mins, stopping..."
+        echo "Sanitizing DB was not initialized after 1 min, stopping..."
         docker kill publishing_db_container
         docker rm publishing_db_container
         docker stop sanitizing_db_container
