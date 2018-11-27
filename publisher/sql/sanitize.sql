@@ -1,37 +1,47 @@
-UPDATE emails
-SET
-  email            = regexp_replace(email, '(^[^@]+)', md5(email)),
-  "recipientEmail" = regexp_replace("recipientEmail", '(^[^@]+)', md5("recipientEmail")),
-  name             = md5(name);
+CREATE OR REPLACE FUNCTION sanitize_email(_t VARCHAR, _c VARCHAR)
+  RETURNS VOID AS
+$$
+BEGIN
+  EXECUTE format('UPDATE "%s" SET "%s" = RIGHT(md5("%s"), 12) || SUBSTRING("%s", ''@.+$'');', _t, _c, _c, _c);
+END
+$$
+LANGUAGE plpgsql;
 
-UPDATE emails
-SET
-  phone = 93000000
-WHERE phone IS NOT NULL;
+CREATE OR REPLACE FUNCTION sanitize_phone(_t VARCHAR, _c VARCHAR)
+  RETURNS VOID AS
+$$
+BEGIN
+  EXECUTE format('UPDATE "%s" SET "%s" = ''93000000'' WHERE "%s" IS NOT NULL;', _t, _c, _c);
+END
+$$
+LANGUAGE plpgsql;
 
-UPDATE users
-SET
-  email         = regexp_replace(email, '(^[^@]+)', md5(email)),
-  "displayName" = md5("displayName");
+CREATE OR REPLACE FUNCTION sanitize_value(_t VARCHAR, _c VARCHAR)
+  RETURNS VOID AS
+$$
+BEGIN
+  EXECUTE format('UPDATE "%s" SET "%s" = RIGHT(md5("%s"), 12);', _t, _c, _c);
+END
+$$
+LANGUAGE plpgsql;
 
-UPDATE users
-SET
-  phone = 93000000
-WHERE phone IS NOT NULL;
+SELECT sanitize_email('emails' :: VARCHAR, 'email' :: VARCHAR);
+SELECT sanitize_email('emails' :: VARCHAR, 'recipientEmail' :: VARCHAR);
+SELECT sanitize_email('users' :: VARCHAR, 'email' :: VARCHAR);
+SELECT sanitize_email('contacts' :: VARCHAR, 'email' :: VARCHAR);
+SELECT sanitize_email('contacts' :: VARCHAR, 'fromEmail' :: VARCHAR);
+SELECT sanitize_email('members' :: VARCHAR, 'email' :: VARCHAR);
 
-UPDATE contacts
-SET
-  phone = '93000000'
-WHERE phone IS NOT NULL;
+SELECT sanitize_phone('emails' :: VARCHAR, 'phone' :: VARCHAR);
+SELECT sanitize_phone('users' :: VARCHAR, 'phone' :: VARCHAR);
+SELECT sanitize_phone('contacts' :: VARCHAR, 'phone' :: VARCHAR);
 
-UPDATE contacts
-SET
-  name  = md5(name),
-  email = regexp_replace(email, '(^[^@]+)', md5(email)),
-  "fromEmail" = regexp_replace("fromEmail", '(^[^@]+)', md5("fromEmail"));
+SELECT sanitize_value('emails' :: VARCHAR, 'name' :: VARCHAR);
+SELECT sanitize_value('users' :: VARCHAR, 'displayName' :: VARCHAR);
+SELECT sanitize_value('contacts' :: VARCHAR, 'name' :: VARCHAR);
+SELECT sanitize_value('members' :: VARCHAR, 'firstName' :: VARCHAR);
+SELECT sanitize_value('members' :: VARCHAR, 'lastName' :: VARCHAR);
 
-UPDATE members
-SET
-  "firstName" = RIGHT(md5("firstName"), 20),
-  "lastName"  = RIGHT(md5("lastName"), 20),
-  email       = RIGHT(regexp_replace(email, '(^[^@]+)', md5(email)), 40);
+DROP FUNCTION sanitize_email(_t VARCHAR, _c VARCHAR );
+DROP FUNCTION sanitize_phone(_t VARCHAR, _c VARCHAR );
+DROP FUNCTION sanitize_value(_t VARCHAR, _c VARCHAR );
