@@ -32,7 +32,7 @@ EORESTORE
     # we need to sanitize sensitive data first
     docker run --name sanitizing_db_container -d --rm \
     -v ${DUMPS_DIR}:/files -v ${SQL_DIR}:/sql \
-    -e POSTGRES_DB=${DB_NAME} -e POSTGRES_PASSWORD= ${POSTGRES_IMAGE}
+    -e POSTGRES_DB=${DB_NAME} -e POSTGRES_PASSWORD="" ${POSTGRES_IMAGE}
     db_initialized=0
     # waiting 1 min for sanitizing_db_container to be initialized
     for i in `seq 1 60`;
