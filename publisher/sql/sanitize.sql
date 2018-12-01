@@ -81,7 +81,7 @@ from pg_catalog.pg_statio_all_tables as st
   inner join information_schema.columns c on (pgd.objsubid = c.ordinal_position
                                               and c.table_schema = st.schemaname and c.table_name = st.relname);
 
--- call sanitize_email on every column containing sanitize_as_email in the comment
+-- call sanitize_email on every column containing SANITIZE_AS_EMAIL in the comment
 select sanitize_email(res.table_name :: varchar, res.column_name :: varchar)
 from (select
         c.table_name,
@@ -92,7 +92,7 @@ from (select
                                                     and c.table_schema = st.schemaname and c.table_name = st.relname)
       where pgd.description like '%SANITIZE_AS_EMAIL%') as res;
 
--- call sanitize_value on every column containing sanitize_as_value in the comment
+-- call sanitize_value on every column containing SANITIZE_AS_VALUE in the comment
 select sanitize_value(res.table_name :: varchar, res.column_name :: varchar)
 from (select
         c.table_name,
@@ -103,7 +103,7 @@ from (select
                                                     and c.table_schema = st.schemaname and c.table_name = st.relname)
       where pgd.description like '%SANITIZE_AS_VALUE%') as res;
 
--- call sanitize_phone on every column containing sanitize_as_phone in the comment
+-- call sanitize_phone on every column containing SANITIZE_AS_PHONE in the comment
 select sanitize_phone(res.table_name :: varchar, res.column_name :: varchar)
 from (select
         c.table_name,
