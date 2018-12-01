@@ -90,7 +90,7 @@ from (select
         inner join pg_catalog.pg_description pgd on (pgd.objoid = st.relid)
         inner join information_schema.columns c on (pgd.objsubid = c.ordinal_position
                                                     and c.table_schema = st.schemaname and c.table_name = st.relname)
-      where pgd.description like '%SANITIZE_AS_EMAIL%') as res;
+      where pgd.description ilike '%SANITIZE_AS_EMAIL%') as res;
 
 -- call sanitize_value on every column containing SANITIZE_AS_VALUE in the comment
 select sanitize_value(res.table_name :: varchar, res.column_name :: varchar)
@@ -101,7 +101,7 @@ from (select
         inner join pg_catalog.pg_description pgd on (pgd.objoid = st.relid)
         inner join information_schema.columns c on (pgd.objsubid = c.ordinal_position
                                                     and c.table_schema = st.schemaname and c.table_name = st.relname)
-      where pgd.description like '%SANITIZE_AS_VALUE%') as res;
+      where pgd.description ilike '%SANITIZE_AS_VALUE%') as res;
 
 -- call sanitize_phone on every column containing SANITIZE_AS_PHONE in the comment
 select sanitize_phone(res.table_name :: varchar, res.column_name :: varchar)
@@ -112,7 +112,7 @@ from (select
         inner join pg_catalog.pg_description pgd on (pgd.objoid = st.relid)
         inner join information_schema.columns c on (pgd.objsubid = c.ordinal_position
                                                     and c.table_schema = st.schemaname and c.table_name = st.relname)
-      where pgd.description like '%SANITIZE_AS_PHONE%') as res;
+      where pgd.description ilike '%SANITIZE_AS_PHONE%') as res;
 
 -- call sanitize_nullable on every column containing SANITIZE_AS_NULLABLE in the comment
 select sanitize_nullable(res.table_name :: varchar, res.column_name :: varchar)
@@ -123,7 +123,7 @@ from (select
         inner join pg_catalog.pg_description pgd on (pgd.objoid = st.relid)
         inner join information_schema.columns c on (pgd.objsubid = c.ordinal_position
                                                     and c.table_schema = st.schemaname and c.table_name = st.relname)
-      where pgd.description like '%SANITIZE_AS_NULLABLE%') as res;
+      where pgd.description ilike '%SANITIZE_AS_NULLABLE%') as res;
 
 -- call sanitize_jsonb on every column containing SANITIZE_AS_JSONB in the comment
 select sanitize_jsonb(res.table_name :: varchar, res.column_name :: varchar)
@@ -134,7 +134,7 @@ from (select
         inner join pg_catalog.pg_description pgd on (pgd.objoid = st.relid)
         inner join information_schema.columns c on (pgd.objsubid = c.ordinal_position
                                                     and c.table_schema = st.schemaname and c.table_name = st.relname)
-      where pgd.description like '%SANITIZE_AS_JSONB%') as res;
+      where pgd.description ilike '%SANITIZE_AS_JSONB%') as res;
 
 -- cleanup the functions
 drop function sanitize_email(_t varchar, _c varchar );
