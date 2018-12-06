@@ -16,3 +16,4 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./start.sh:/usr/src/app/start.sh
+      - ./sql:/usr/src/app/sql
