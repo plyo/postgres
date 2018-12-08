@@ -30,8 +30,7 @@ EORESTORE
     docker start publishing_db_container
 
     # we need to sanitize sensitive data first
-    docker run --name sanitizing_db_container -d --rm \
-    -v ${DUMPS_DIR}:/files -v ${SQL_DIR}:/sql \
+    docker run --name sanitizing_db_container -d --rm -v ${DUMPS_DIR}:/files \
     -e POSTGRES_DB=${DB_NAME} -e POSTGRES_PASSWORD="" ${POSTGRES_IMAGE}
     db_initialized=0
     # waiting 1 min for sanitizing_db_container to be initialized
@@ -56,8 +55,7 @@ EORESTORE
     docker exec sanitizing_db_container psql -f /files/${backup_roles_file} -U postgres
     docker exec sanitizing_db_container pg_restore /files/${backup_file} -U postgres -d ${DB_NAME}
 
-    ls -la ${SQL_DIR}/sanitize.sql
-    docker cp ${SQL_DIR}/sanitize.sql sanitizing_db_container:/sanitize.sql
+    docker cp sanitize.sql sanitizing_db_container:/sanitize.sql
     docker exec sanitizing_db_container psql -f /sanitize.sql -U postgres ${DB_NAME}
     docker exec sanitizing_db_container pg_dump -Fc -U postgres -f /files/${backup_file}.sanitized ${DB_NAME} > /dev/null
     docker stop sanitizing_db_container
