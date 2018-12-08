@@ -55,7 +55,7 @@ EORESTORE
     docker exec sanitizing_db_container psql -f /files/${backup_roles_file} -U postgres
     docker exec sanitizing_db_container pg_restore /files/${backup_file} -U postgres -d ${DB_NAME}
 
-    docker cp sanitize.sql sanitizing_db_container:/sanitize.sql
+    docker cp sql/sanitize.sql sanitizing_db_container:/sanitize.sql
     docker exec sanitizing_db_container psql -f /sanitize.sql -U postgres ${DB_NAME}
     docker exec sanitizing_db_container pg_dump -Fc -U postgres -f /files/${backup_file}.sanitized ${DB_NAME} > /dev/null
     docker stop sanitizing_db_container
