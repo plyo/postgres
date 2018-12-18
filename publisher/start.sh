@@ -30,8 +30,10 @@ EORESTORE
     docker start publishing_db_container
 
     # we need to sanitize sensitive data first
-    docker run --name sanitizing_db_container -d --rm -v ${DUMPS_DIR}:/files \
-    -e POSTGRES_DB=${DB_NAME} -e POSTGRES_PASSWORD="" ${POSTGRES_IMAGE}
+    docker run --name sanitizing_db_container -d --rm \
+    -v ${DUMPS_DIR}:/files \
+    -w /docker-entrypoint-initdb.d \
+    ${POSTGRES_IMAGE} tail -f /dev/null
     db_initialized=0
     # waiting 1 min for sanitizing_db_container to be initialized
     for i in `seq 1 60`;
