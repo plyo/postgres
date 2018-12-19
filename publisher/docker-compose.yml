@@ -5,14 +5,18 @@ services:
     working_dir: /usr/src/app
     environment:
       - DB_NAME=test_db
+      - ADMIN_ROLE_NAME=admin
+      - APP_ROLE_NAME=app
       - DOCKERHUB_LOGIN
       - DOCKERHUB_PASS
       - DUMP_NAME_SUFFIX=-prod-db-5432-hourly.backup
-      - POSTGRES_IMAGE=plyo/postgres:database-10.4-4.1.0
+      - POSTGRES_IMAGE=plyo/postgres:database-10.4-5.0.0-rc
       - DUMPS_DIR
-      - DESTINATION_DOCKER_IMAGE=registry.plyo.website/plyo/db:data
-      - POSTGRES_IMAGE=postgres:10.5
+      - DESTINATION_DOCKER_IMAGE=registry.plyo.website/plyo/db-test:data
       - SQL_DIR
+      - SCHEMA_NAME=test_schema
+      - PRIVATE_SCHEMA_NAME=test_schema_private
+      - EXTENSIONS=pgcrypto,ltree
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - ./start.sh:/usr/src/app/start.sh
