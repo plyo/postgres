@@ -14,6 +14,8 @@ RUN apk --update add curl \
 
 WORKDIR /usr/src/app
 COPY ./start.sh /usr/src/app/start.sh
+RUN mkdir -p /usr/src/app/sql
+COPY ./sql/sanitize.sql /usr/src/app/sql/sanitize.sql
 
 RUN chmod 755 start.sh
 CMD ./start.sh
