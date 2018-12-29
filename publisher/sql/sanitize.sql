@@ -7,6 +7,28 @@ create schema sanitizing;
 -- - sanitize_value
 -- - sanitize_nullable
 -- - sanitize_jsonb
+create or replace function sanitizing.sanitize_emails_in_string(_s varchar)
+  returns varchar AS
+$$
+declare
+begin
+  return string_agg(
+      case word like '%@%'
+      when true
+        then right(md5(word), 12) || substring(word, '@.+$')
+      else word
+      end,
+      ''
+  )
+  from unnest(regexp_split_to_array(
+  _s,
+  '((?=\m[[:alnum:]]*?@[[:alnum:]]*?\.[[:alnum:]]*?\M)|(?<=\m[[:alnum:]]*?@[[:alnum:]]*?\.[[:alnum:]]*?\M))'
+  )) word
+  group by true;
+end
+$$
+language plpgsql;
+
 create or replace function sanitizing.sanitize_email(_t varchar, _c varchar)
   returns void as
 $$
