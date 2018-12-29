@@ -29,7 +29,7 @@ end
 $$
 language plpgsql;
 
-create or replace function sanitizing.sanitize_email(_t varchar, _c varchar)
+create or replace function sanitizing.sanitize_emails(_t varchar, _c varchar)
   returns void as
 $$
 declare
@@ -105,8 +105,8 @@ from pg_catalog.pg_statio_all_tables as st
   inner join information_schema.columns c on (pgd.objsubid = c.ordinal_position
                                               and c.table_schema = st.schemaname and c.table_name = st.relname);
 
--- call sanitize_email on every column containing SANITIZE_AS_EMAIL in the comment
-select sanitizing.sanitize_email(res.table_name :: varchar, res.column_name :: varchar)
+-- call sanitize_emails on every column containing SANITIZE_AS_EMAIL in the comment
+select sanitizing.sanitize_emails(res.table_name :: varchar, res.column_name :: varchar)
 from (select
         c.table_name,
         c.column_name
