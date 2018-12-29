@@ -35,7 +35,7 @@ $$
 declare
   affected numeric;
 begin
-  execute format('update "%s" set "%s" = right(md5("%s"), 12) || substring("%s", ''@.+$'');', _t, _c, _c, _c);
+  execute format('update "%s" set "%s" = sanitize_emails_in_string("%s");', _t, _c, _c);
   get diagnostics affected = row_count;
   raise notice '%.% is sanitized: % rows affected', _t, _c, affected;
 end
