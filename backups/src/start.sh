@@ -7,7 +7,7 @@ sleep 5
 
 db_number=1
 eval "db_config=\$DB_CONFIG_${db_number}"
-while [ "${db_config}" ]; do
+while [[ ${db_config} ]]; do
     echo ${db_config} >> /root/.pgpass
     let "db_number += 1"
     eval "db_config=\$DB_CONFIG_${db_number}"
