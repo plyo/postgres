@@ -22,7 +22,7 @@ backup_file=${backup_date}${DUMP_NAME_SUFFIX}
 backup_roles_file=${backup_file}_roles.out
 
 log "Looking for ${backup_file} inside container"
-if [ $(docker exec publishing_db_container test -e "/files/${backup_file}" && echo $?) ];
+if [[ $(docker exec publishing_db_container test -e "/files/${backup_file}" && echo $?) ]];
 then
     # we preparing 2 docker images, one contains only needed roles - it's "empty" state of DB
     # another one contains data and can be used by developer and tools running tests on real data
@@ -68,7 +68,7 @@ EORESTORE
 
     echo ""
 
-    if [ "$db_initialized" -eq 0 ]
+    if [[ "$db_initialized" -eq 0 ]]
     then
         log "Sanitizing DB was not initialized after 1 min, stopping..."
         docker kill publishing_db_container
