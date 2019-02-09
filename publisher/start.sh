@@ -61,7 +61,7 @@ EORESTORE
     log "Waiting 1 min for sanitizer to be initialized"
     for i in `seq 1 60`;
     do
-      docker exec sanitizing_db_container psql -U postgres -c "\t" &> /dev/null && db_initialized=1 && break
+      docker exec sanitizing_db_container nc -z localhost 5432 && db_initialized=1 && break
       echo -n .
       sleep 1
     done
