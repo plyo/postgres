@@ -13,7 +13,21 @@ $$
 declare
   affected numeric;
 begin
-  execute format('update "%s" set "%s" = right(md5("%s"), 12) || substring("%s", ''@.+$'');', _t, _c, _c, _c);
+  execute format(
+    'with data as (
+      select
+        id,
+        string_agg(
+          right(md5(e), 8) || substring(e, ''@.+$'') || ''t'',
+          '',''
+          ) as sanitized
+      from %1$I, unnest(regexp_split_to_array(%2$I, '','')) e
+      group by id
+    )
+    update %1$I
+    set %2$I = sanitized
+    from data
+    where data.id = %1$I.id;', _t, _c);
   get diagnostics affected = row_count;
   raise notice '%.% is sanitized: % rows affected', _t, _c, affected;
 end
@@ -26,7 +40,7 @@ $$
 declare
   affected numeric;
 begin
-  execute format('update "%s" set "%s" = ''93000000'' where "%s" is not null;', _t, _c, _c);
+  execute format('update %1$I set %2$I = ''93000000'' where %2$I is not null;', _t, _c);
   get diagnostics affected = row_count;
   raise notice '%.% is sanitized: % rows affected', _t, _c, affected;
 end
@@ -39,7 +53,7 @@ $$
 declare
   affected numeric;
 begin
-  execute format('update "%s" set "%s" = right(md5("%s"), 12);', _t, _c, _c);
+  execute format('update %1$I set %2$I = right(md5(%2$I), 12);', _t, _c);
   get diagnostics affected = row_count;
   raise notice '%.% is sanitized: % rows affected', _t, _c, affected;
 end
@@ -52,7 +66,7 @@ $$
 declare
   affected numeric;
 begin
-  execute format('update "%s" set "%s" = NULL;', _t, _c, _c);
+  execute format('update %I set %I = null;', _t, _c);
   get diagnostics affected = row_count;
   raise notice '%.% is sanitized: % rows affected', _t, _c, affected;
 end
@@ -65,7 +79,7 @@ $$
 declare
   affected numeric;
 begin
-  execute format('update "%s" set "%s" = ''{}''::jsonb;', _t, _c, _c);
+  execute format('update %I set %I = ''{}''::jsonb;', _t, _c);
   get diagnostics affected = row_count;
   raise notice '%.% is sanitized: % rows affected', _t, _c, affected;
 end
