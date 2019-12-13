@@ -25,7 +25,7 @@ begin
       group by id
     )
     update %1$I
-    set %2$I = sanitized
+    set %2$I = case when sanitized isnull then ''emailNotValid@plyo.io'' else sanitized end
     from data
     where data.id = %1$I.id;', _t, _c);
   get diagnostics affected = row_count;
