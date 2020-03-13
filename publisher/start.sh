@@ -46,7 +46,7 @@ EORESTORE
 
   # we need to sanitize sensitive data first
   log "Running another postgres docker image for sanitizer"
-  docker run --name sanitizing_db_container -d --rm \
+  docker run --name sanitizing_db_container -d \
     -v ${DUMPS_DIR}:/files \
     -w /docker-entrypoint-initdb.d \
     -e DB_NAME=${DB_NAME} \
@@ -103,8 +103,11 @@ EORESTORE
 else
   log "File ${backup_file} is not found, stopping publishing container"
   docker stop publishing_db_container
+  docker stop sanitizing_db_container
 fi
 
 log "Trying to kill publisher in case it was not stopped"
 docker kill publishing_db_container
 docker rm publishing_db_container
+docker kill sanitizing_db_container
+docker rm sanitizing_db_container
