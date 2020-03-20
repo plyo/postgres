@@ -73,7 +73,7 @@ end
 $$
 language plpgsql;
 
-create or replace function sanitizing.sanitize_jsonb(_t varchar, _c varchar)
+create or replace function sanitizing.sanitize_as_empty_jsonb(_t varchar, _c varchar)
   returns void as
 $$
 declare
@@ -85,6 +85,51 @@ begin
 end
 $$
 language plpgsql;
+
+create or replace function sanitizing.get_sanitized_jsonb(obj jsonb)
+  returns jsonb as
+$$
+declare
+  key_ text;
+begin
+  for key_ in select k from jsonb_object_keys(obj) as t(k) loop
+      if jsonb_typeof(obj -> key_) = 'string' then
+        if obj ->> key_ ~ '.+@.+\..+' then
+          obj = jsonb_set(
+            obj,
+            array[key_],
+            to_jsonb((
+              select string_agg(right(md5(e), 8) || substring(e, '@.+$') || 't',',')
+              from unnest(regexp_split_to_array(obj ->> key_, ',')) e
+            ))
+          );
+        elseif obj ->> key_ ~ '[0-9]' and obj ->> key_ !~ '[A-Za-z]' then
+          obj = jsonb_set(obj, array[key_], to_jsonb(93000000));
+        elseif obj ->> key_ ~ '\s' then
+          obj = jsonb_set(obj, array[key_], to_jsonb(right(md5(obj ->> key_), 12)));
+        end if;
+      elseif jsonb_typeof(obj -> key_) = 'object' then
+        obj = jsonb_set(obj, array[key_], sanitizing.get_sanitized_jsonb(obj -> key_) );
+      end if;
+    end loop;
+  return obj;
+end
+$$
+  language plpgsql;
+
+create or replace function sanitizing.sanitize_jsonb(_t varchar, _c varchar)
+  returns void as
+$$
+declare
+  affected numeric;
+begin
+  execute format('update %I set %I = sanitizing.get_sanitized_jsonb(%I);', _t, _c, _c);
+  get diagnostics affected = row_count;
+  raise notice '%.% is sanitized: % rows affected', _t, _c, affected;
+end
+$$
+  language plpgsql;
+
 
 -- this query is for demo purposes only. it shows all the columns with non-null comments.
 -- the query is a base for filtering columns to sanitize.
@@ -151,6 +196,17 @@ from (select
         inner join information_schema.columns c on (pgd.objsubid = c.ordinal_position
                                                     and c.table_schema = st.schemaname and c.table_name = st.relname)
       where pgd.description ilike '%SANITIZE_AS_JSONB%') as res;
+
+-- call sanitize_as_empty_jsonb on every column containing SANITIZE_AS_EMPTY_JSONB in the comment
+select sanitizing.sanitize_as_empty_jsonb(res.table_name :: varchar, res.column_name :: varchar)
+from (select
+        c.table_name,
+        c.column_name
+      from pg_catalog.pg_statio_all_tables as st
+        inner join pg_catalog.pg_description pgd on (pgd.objoid = st.relid)
+        inner join information_schema.columns c on (pgd.objsubid = c.ordinal_position
+                                                    and c.table_schema = st.schemaname and c.table_name = st.relname)
+      where pgd.description ilike '%SANITIZE_AS_EMPTY_JSONB%') as res;
 
 -- cleanup the functions
 drop schema sanitizing cascade;
