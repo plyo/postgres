@@ -66,11 +66,11 @@ LINE 1: create table users_test_2 (
                      ^
 -- should not be able to remove existent one
 drop table users_test;
-psql:test/sql/users.sql:60: ERROR:  must be owner of relation users_test
+psql:test/sql/users.sql:60: ERROR:  must be owner of table users_test
 -- should not be able to alter existent table
 alter table users_test
   add column col2 integer;
-psql:test/sql/users.sql:64: ERROR:  must be owner of relation users_test
+psql:test/sql/users.sql:64: ERROR:  must be owner of table users_test
 -- should not be able to create a new table in private schema
 create table test_schema_private.users_test_private_2 (
   col integer
