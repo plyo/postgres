@@ -1,5 +1,5 @@
 x-db: &db
-  image: 'plyo/postgres:database-10.4-3.2.0'
+  image: 'plyo/postgres:database-13.1-6.0.0'
   environment:
     - APP_PASSWORD=password
     - ADMIN_PASSWORD=password

@@ -1,4 +1,4 @@
-FROM postgres:10.4-alpine
+FROM postgres:13.1-alpine
 
 VOLUME /backups
 
