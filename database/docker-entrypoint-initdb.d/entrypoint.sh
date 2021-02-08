@@ -45,6 +45,8 @@ psql --username postgres <<-EOSQL
     grant all privileges on schema ${privateSchemaName} to ${adminRole} with grant option;
 
     ${creating_extensions_sql}
+
+    set search_path to ${schemaName};
 EOSQL
 
 echo "=> Done!"
