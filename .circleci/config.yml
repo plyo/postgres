@@ -56,15 +56,16 @@ jobs:
           at: ~/postgres
       - setup_remote_docker:
           version: 19.03.14
-      - run: |
-          ssh remote-docker \<<EOF
-            sudo bash -c 'echo "{\"experimental\": true}" > /etc/docker/daemon.json'
-            sudo systemctl restart docker
-            sudo docker info
-          EOF
+#      - run: |
+#          ssh remote-docker \<<EOF
+#            sudo bash -c 'echo "{\"experimental\": true}" > /etc/docker/daemon.json'
+#            sudo systemctl restart docker
+#            sudo docker info
+#          EOF
       - run:
           name: Build and push docker image
           command: |
+            export DOCKER_CLI_EXPERIMENTAL=enabled
             IFS=- read service mics <<< ${CIRCLE_TAG}
             cd ${service}
             image_name=plyo/postgres:${CIRCLE_TAG}-arm
@@ -86,16 +87,16 @@ workflows:
           filters:
             tags:
               only: /database-.*/
-      - test-database:
-          requires:
-            - checkout
-          filters:
-            tags:
-              only: /.*/
+#      - test-database:
+#          requires:
+#            - checkout
+#          filters:
+#            tags:
+#              only: /.*/
       - publish:
           requires:
             - checkout
-            - test-database
+#            - test-database
           filters:
             branches:
               ignore: /.*/
