@@ -55,7 +55,7 @@ jobs:
       - attach_workspace:
           at: ~/postgres
       - setup_remote_docker:
-          version: 19.03.14
+          version: 20.10.6
 #      - run: |
 #          ssh remote-docker \<<EOF
 #            sudo bash -c 'echo "{\"experimental\": true}" > /etc/docker/daemon.json'
