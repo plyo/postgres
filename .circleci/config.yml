@@ -71,7 +71,6 @@ jobs:
             image_name=plyo/postgres:${CIRCLE_TAG}-arm
             docker context create arm_pg_builder
             docker buildx create arm_pg_builder
-#            docker buildx use arm_pg_builder
             docker buildx build --platform linux/arm64 -t alpine-arm64 --load .
             docker push ${image_name}
 #            image_name=plyo/postgres:${CIRCLE_TAG}
