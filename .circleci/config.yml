@@ -69,10 +69,11 @@ jobs:
             IFS=- read service mics <<< ${CIRCLE_TAG}
             cd ${service}
             image_name=plyo/postgres:${CIRCLE_TAG}-arm
-            docker context create arm_pg_builder
-            docker buildx create arm_pg_builder
-            docker buildx build --platform linux/arm64 -t alpine-arm64 --load .
+            docker buildx build --platform linux/arm64 -t ${image_name} .
             docker push ${image_name}
+#            docker context create arm_pg_builder
+#            docker buildx create arm_pg_builder
+#            docker buildx use arm_pg_builder
 #            image_name=plyo/postgres:${CIRCLE_TAG}
 #            docker build -t ${image_name} .
 #            docker login -u $DOCKER_USER -p $DOCKER_PASS
