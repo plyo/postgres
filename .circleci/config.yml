@@ -49,13 +49,19 @@ jobs:
 
   publish:
     docker:
-      - image: circleci/buildpack-deps:curl
+      - image: cimg/base:stable
     working_directory: ~/postgres
     steps:
       - attach_workspace:
           at: ~/postgres
       - setup_remote_docker:
-          docker_layer_caching: true
+          version: 19.03.14
+      - run: |
+          ssh remote-docker \<<EOF
+            sudo bash -c 'echo "{\"experimental\": true}" > /etc/docker/daemon.json'
+            sudo systemctl restart docker
+            sudo docker info
+          EOF
       - run:
           name: Build and push docker image
           command: |
@@ -66,10 +72,10 @@ jobs:
             docker builds use arm_pg_builder
             docker buildx build --platform linux/arm64 -t alpine-arm64 --load .
             docker push ${image_name}
-            image_name=plyo/postgres:${CIRCLE_TAG}
-            docker build -t ${image_name} .
-            docker login -u $DOCKER_USER -p $DOCKER_PASS
-            docker push ${image_name}
+#            image_name=plyo/postgres:${CIRCLE_TAG}
+#            docker build -t ${image_name} .
+#            docker login -u $DOCKER_USER -p $DOCKER_PASS
+#            docker push ${image_name}
 
 workflows:
   version: 2
