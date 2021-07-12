@@ -56,25 +56,16 @@ jobs:
           at: ~/postgres
       - setup_remote_docker:
           version: 20.10.6
-#      - run: |
-#          ssh remote-docker \<<EOF
-#            sudo bash -c 'echo "{\"experimental\": true}" > /etc/docker/daemon.json'
-#            sudo systemctl restart docker
-#            sudo docker info
-#          EOF
       - run:
           name: Build and push docker image
           command: |
             export DOCKER_CLI_EXPERIMENTAL=enabled
             IFS=- read service mics <<< ${CIRCLE_TAG}
             cd ${service}
-            image_name=plyo/postgres:${CIRCLE_TAG}-arm
-            docker buildx build --target db --platform linux/arm64 -t ${image_name} .
+            image_name=plyo/postgres:${CIRCLE_TAG}
+            docker buildx build --target db --platform inux/amd64,linux/arm64 -t ${image_name} .
             docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker push ${image_name}
-#            image_name=plyo/postgres:${CIRCLE_TAG}
-#            docker build -t ${image_name} .
-#            docker push ${image_name}
 
 workflows:
   version: 2
