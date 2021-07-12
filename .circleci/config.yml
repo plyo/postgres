@@ -64,10 +64,10 @@ jobs:
             cd ${service}
             image_name=plyo/postgres:${CIRCLE_TAG}
             docker build -t ${image_name} .
+            docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker push ${image_name}
             image_name=plyo/postgres:${CIRCLE_TAG}-arm
             docker buildx build --target db --platform linux/arm64 -t ${image_name} .
-            docker login -u $DOCKER_USER -p $DOCKER_PASS
             docker push ${image_name}
 
 workflows:
