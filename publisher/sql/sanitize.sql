@@ -142,6 +142,18 @@ from pg_catalog.pg_statio_all_tables as st
   inner join information_schema.columns c on (pgd.objsubid = c.ordinal_position
                                               and c.table_schema = st.schemaname and c.table_name = st.relname);
 
+-- truncate table which are not needed for the development before the sanitizing (logs, emails etc);
+-- a table must have 'TRUNCATE_ON_SANITIZE' comment
+do $$
+  declare t text;
+  begin
+    for t in select relname from pg_class
+             where relkind = 'r' and obj_description(oid) = 'TRUNCATE_ON_SANITIZE' loop
+        execute 'truncate table ' || quote_ident(t) || ' cascade'; -- cascade to drop formDataImages etc
+      end loop;
+  end
+$$;
+
 -- call sanitize_email on every column containing SANITIZE_AS_EMAIL in the comment
 select sanitizing.sanitize_email(res.table_name :: varchar, res.column_name :: varchar)
 from (select
