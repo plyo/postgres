@@ -34,7 +34,8 @@ function perform_backups()
         rm -f ${backup_roles_file_path}.in_progress
 
         if [[ "${S3_KEY}" != "" ]]; then
-          s3_backup_file_path="${S3_BACKUP_MNT_POINT}/${backup_date}${suffix}".backup
+          mkdir -p "${S3_BACKUP_MNT_POINT}/$db_host"
+          s3_backup_file_path="${S3_BACKUP_MNT_POINT}/$db_host/${backup_date}${suffix}".backup
           log "Copy backup for ${DB_NAME} database to ${s3_backup_file_path}"
           cp "${backup_file_path}" "${s3_backup_file_path}"
         fi

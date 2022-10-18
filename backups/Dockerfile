@@ -1,7 +1,7 @@
 FROM postgres:13.1-alpine
 
 ENV S3_BACKUP_MNT_POINT /var/s3fs
-ENV S3_BUCKET_URL https://fra1.digitaloceanspaces.com
+ENV S3_BUCKET_URL ""
 
 ARG S3FS_VERSION=v1.86
 

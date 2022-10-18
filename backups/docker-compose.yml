@@ -46,6 +46,7 @@ services:
       S3_KEY: '*'
       S3_SECRET_KEY: '*'
       S3_BUCKET: plyo-db-backups-prod
+      S3_BUCKET_URL: https://fra1.digitaloceanspaces.com
     volumes:
       - ./backups/:/backups/
       - ./src:/usr/src/app/
