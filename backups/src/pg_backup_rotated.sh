@@ -32,6 +32,13 @@ function perform_backups()
         cat ${backup_roles_file_path}.in_progress | grep -v ${IGNORE_DUMP_ROLES} > "${backup_roles_file_path}"
         mv ${backup_file_path}.in_progress ${backup_file_path}
         rm -f ${backup_roles_file_path}.in_progress
+
+        if [[ "${S3_KEY}" != "" ]]; then
+          mkdir -p "${S3_BACKUP_MNT_POINT}/$db_host"
+          s3_backup_file_path="${S3_BACKUP_MNT_POINT}/$db_host/${backup_date}${suffix}".backup
+          log "Copy backup for ${DB_NAME} database to ${s3_backup_file_path}"
+          cp "${backup_file_path}" "${s3_backup_file_path}"
+        fi
         log "Database backup complete!"
     fi
 }
@@ -44,6 +51,12 @@ function clean_up() {
       -maxdepth 1 -mtime +${time_to_keep} \
       -name "*${suffix}*" \
       -exec rm -rf '{}' ';'
+    if [[ "${S3_KEY}" != "" ]]; then
+      find ${S3_BACKUP_MNT_POINT} \
+          -maxdepth 1 -mtime +${time_to_keep} \
+          -name "*${suffix}*" \
+          -exec rm -rf '{}' ';'
+    fi
 }
 
 function dump_database()
@@ -67,7 +80,7 @@ function dump_database()
 
     # WEEKLY BACKUPS
 
-    local backup_time=`date +%H:%M`
+    local backup_time=`date +%H:00`
 
     local day_of_week=`date +%u` #1-7 (Monday-Sunday)
     if [[ ${day_of_week} = ${DAY_OF_WEEK_TO_KEEP} ]];

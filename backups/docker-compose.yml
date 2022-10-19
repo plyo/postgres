@@ -1,5 +1,5 @@
 x-db: &db
-  image: 'plyo/postgres:database-13.1-6.0.0'
+  image: 'plyo/postgres:database-13.1-6.0.2'
   environment:
     - APP_PASSWORD=password
     - ADMIN_PASSWORD=password
@@ -42,9 +42,18 @@ services:
 
       # Avoid dumping of existent roles to prevent password rewriting
       IGNORE_DUMP_ROLES: \(admin\|app\|postgres\)
+
+      S3_KEY: '*'
+      S3_SECRET_KEY: '*'
+      S3_BUCKET: plyo-db-backups-prod
+      S3_BUCKET_URL: https://fra1.digitaloceanspaces.com
     volumes:
       - ./backups/:/backups/
       - ./src:/usr/src/app/
+    cap_add:
+      - SYS_ADMIN
+    devices:
+      - /dev/fuse
     depends_on:
       - db-1
       - db-2
