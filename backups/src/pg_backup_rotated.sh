@@ -52,7 +52,7 @@ function clean_up() {
       -name "*${suffix}*" \
       -exec rm -rf '{}' ';'
     if [[ "${S3_KEY}" != "" ]]; then
-      find ${S3_BACKUP_MNT_POINT} \
+      find "${S3_BACKUP_MNT_POINT}/$db_host" \
           -maxdepth 1 -mtime +${time_to_keep} \
           -name "*${suffix}*" \
           -exec rm -rf '{}' ';'
