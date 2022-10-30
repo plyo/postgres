@@ -43,6 +43,8 @@ services:
       # Avoid dumping of existent roles to prevent password rewriting
       IGNORE_DUMP_ROLES: \(admin\|app\|postgres\)
 
+      PERFORM_BACKUP_ROLES: "1"
+
       S3_KEY: '*'
       S3_SECRET_KEY: '*'
       S3_BUCKET: plyo-db-backups-prod
