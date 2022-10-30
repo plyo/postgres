@@ -1,4 +1,4 @@
-FROM postgres:13.1-alpine
+FROM postgres:14.1-alpine
 
 ENV S3_BACKUP_MNT_POINT /var/s3fs
 ENV S3_BUCKET_URL ""
