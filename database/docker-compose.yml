@@ -9,8 +9,8 @@ x-db_defaults: &db_defaults
     - SCHEMA_NAME=test_schema
     - PRIVATE_SCHEMA_NAME=test_schema_private
     - EXTENSIONS=pgcrypto,ltree
-  ports:
-    - '5432:5432'
+#  ports:
+#    - '5432:5432'
 
 version: '3.4'
 services:
