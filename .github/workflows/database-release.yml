@@ -18,7 +18,7 @@ jobs:
       - name: Running tests
         working-directory: database
         run: |
-          docker-compose up -d test-ci
+          docker-compose up test-ci
           
           for i in `seq 1 300`; # waiting 5 mins since building postgres first time can take significant time
           do
