@@ -15,22 +15,19 @@ jobs:
         uses: KengoTODA/actions-setup-docker-compose@v1.0.9
         with:
           version: '1.19.0'
-      - name: Running postgres instance for tests
-        working-directory: database
-        run: docker-compose up -d test-ci
-      - name: Waiting for DB to be ready
+      - name: Running tests
         working-directory: database
         run: |
+          docker-compose up -d test-ci
+          
           for i in `seq 1 300`; # waiting 5 mins since building postgres first time can take significant time
           do
             docker-compose exec test-ci psql --username postgres -c "\t" && echo DB Up && exit 0
             echo -n .
             sleep 1
           done
-          echo Failed waiting for DB && exit 1
-      - name: Running tests
-        working-directory: database
-        run: docker-compose exec test-ci make test
+          
+          docker-compose exec test-ci make test
 
   publish:
     runs-on: ubuntu-latest
