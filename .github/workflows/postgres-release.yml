@@ -27,7 +27,7 @@ jobs:
           done
           echo Failed waiting for DB && exit 1
       - name: Running tests
-      - run: docker-compose exec test-ci make test
+        run: docker-compose exec test-ci make test
 
   publish:
     runs-on: ubuntu-latest
