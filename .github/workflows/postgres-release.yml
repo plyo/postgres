@@ -16,8 +16,10 @@ jobs:
         with:
           version: '1.19.0'
       - name: Running postgres instance for tests
+        working-directory: database
         run: docker-compose up -d test-ci
       - name: Waiting for DB to be ready
+        working-directory: database
         run: |
           for i in `seq 1 300`; # waiting 5 mins since building postgres first time can take significant time
           do
@@ -27,6 +29,7 @@ jobs:
           done
           echo Failed waiting for DB && exit 1
       - name: Running tests
+        working-directory: database
         run: docker-compose exec test-ci make test
 
   publish:
