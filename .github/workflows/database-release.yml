@@ -49,7 +49,7 @@ jobs:
           echo "logs"
           docker-compose logs test-ci
           echo "start"
-          docker-compose exec test-ci make test
+          docker-compose exec -T test-ci make test
 
   publish:
     runs-on: ubuntu-latest
