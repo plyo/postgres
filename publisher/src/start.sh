@@ -3,8 +3,8 @@ log () {
   echo "[start.sh]> $@"
 }
 
-log "Logging in on registry.plyo.website"
-docker login -p=${DOCKERHUB_PASS} -u=${DOCKERHUB_LOGIN} registry.plyo.website
+log "Logging in docker"
+docker login -p=${DOCKERHUB_PASS} -u=${DOCKERHUB_LOGIN} ${DOCKER_HOST}
 
 log "Pulling fresh postgres image ${POSTGRES_IMAGE}"
 docker pull ${POSTGRES_IMAGE}

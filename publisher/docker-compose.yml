@@ -1,6 +1,7 @@
 version: '3.4'
 services:
   publisher:
+    privileged: true
     build: .
     working_dir: /usr/src/app
     environment:
@@ -10,13 +11,20 @@ services:
       - DOCKERHUB_LOGIN
       - DOCKERHUB_PASS
       - DUMP_NAME_SUFFIX=-prod-db-5432-hourly.backup
-      - POSTGRES_IMAGE=plyo/postgres:database-13.1-6.0.0
-      - DUMPS_DIR
+      - POSTGRES_IMAGE=plyo/postgres:database-7.1.0-13.1
+      - DUMPS_DIR=/backups
+      - DOCKER_HOST
       - DESTINATION_DOCKER_IMAGE=registry.plyo.website/plyo/db-test:data
       - SCHEMA_NAME=test_schema
       - PRIVATE_SCHEMA_NAME=test_schema_private
       - EXTENSIONS=pgcrypto,ltree
+      - S3_KEY
+      - S3_SECRET_KEY
+      - S3_BUCKET
+      - S3_BUCKET_URL
+      - S3_BACKUP_MNT_POINT=/backups
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - ./start.sh:/usr/src/app/start.sh
+      - ./src/start.sh:/usr/src/app/start.sh
+      - ./src/mount-s3.sh:/usr/src/app/mount-s3.sh
       - ./sql:/usr/src/app/sql
