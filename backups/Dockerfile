@@ -1,4 +1,6 @@
-FROM postgres:13.1-alpine
+ARG version=13.1
+
+FROM postgres:$version-alpine
 
 ENV S3_BACKUP_MNT_POINT /var/s3fs
 ENV S3_BUCKET_URL ""

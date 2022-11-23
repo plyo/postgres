@@ -1,4 +1,4 @@
-name: Backup Release
+name: Backups Release
 
 on:
   push:
