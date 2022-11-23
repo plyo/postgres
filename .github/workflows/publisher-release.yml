@@ -1,9 +1,8 @@
-name: CI Release
+name: Publisher Release
 
 on:
   push:
     tags:
-      - 'backups-*'
       - 'publisher-*'
 
 jobs:

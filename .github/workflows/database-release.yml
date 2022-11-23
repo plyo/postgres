@@ -1,4 +1,4 @@
-name: CI Release
+name: Database Release
 
 on:
   push:
@@ -12,6 +12,16 @@ jobs:
       matrix:
         version: [ 13.1, 14.1 ]
     name: Test
+    services:
+      postgres:
+        image: "postgres:${{ matrix.version }}"
+        env:
+          POSTGRES_PASSWORD: password
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v3
       - name: Setup docker-compose
@@ -36,8 +46,9 @@ jobs:
             echo -n .
             sleep 1
           done
+          echo "logs"
           docker-compose logs test-ci
-          
+          echo "start"
           docker-compose exec test-ci make test
 
   publish:
@@ -45,7 +56,7 @@ jobs:
     strategy:
       matrix:
         version: [ 13.1, 14.1 ]
-    # needs: [ test ]
+    needs: [ test ]
     name: Publish
     steps:
       - uses: actions/checkout@v3
