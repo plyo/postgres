@@ -8,13 +8,16 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        version: [ 13.1, 14.1 ]
     name: Test
     steps:
       - uses: actions/checkout@v3
       - name: Setup docker-compose
         uses: KengoTODA/actions-setup-docker-compose@v1.0.9
         with:
-          version: '1.19.0'
+          version: '1.29.2'
       - name: Running tests
         working-directory: database
         run: |
@@ -30,7 +33,10 @@ jobs:
 
   publish:
     runs-on: ubuntu-latest
-    needs: [ test ]
+    strategy:
+      matrix:
+        version: [ 13.1, 14.1 ]
+    # needs: [ test ]
     name: Publish
     steps:
       - uses: actions/checkout@v3
@@ -48,5 +54,5 @@ jobs:
         run: |
           IFS=- read service mics <<< ${GITHUB_REF_NAME}
           cd ${service}
-          docker build -t ${{ steps.create_tag.outputs.name }} .
-          docker push ${{ steps.create_tag.outputs.name }}
+          docker build --build-arg="version=${{ matrix.version }}" -t ${{ steps.create_tag.outputs.name }}-${{ matrix.version }} .
+          docker push ${{ steps.create_tag.outputs.name }}-${{ matrix.version }}
