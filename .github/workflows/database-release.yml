@@ -23,11 +23,17 @@ jobs:
         run: |
           docker-compose up -d test-ci
           
-          for i in `seq 1 5`; # waiting 5 mins since building postgres first time can take significant time
+          for i in `seq 1 20`; # waiting 5 mins since building postgres first time can take significant time
           do
+            test_start=$(docker-compose logs test-ci | grep 'accept connections')
+            if [ ! -z "$test_start" ]
+            then
+              break
+            fi
             echo -n .
             sleep 1
           done
+          docker-compose logs test-ci
           
           docker-compose exec test-ci make test
 
