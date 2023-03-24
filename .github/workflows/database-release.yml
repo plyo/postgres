@@ -58,5 +58,5 @@ jobs:
         run: |
           IFS=- read service mics <<< ${GITHUB_REF_NAME}
           cd ${service}
-          docker build --build-arg="version=${{ matrix.version }}" -t ${{ steps.create_tag.outputs.name }}-${{ matrix.version }} .
+          docker build --target=db --build-arg="version=${{ matrix.version }}" -t ${{ steps.create_tag.outputs.name }}-${{ matrix.version }} .
           docker push ${{ steps.create_tag.outputs.name }}-${{ matrix.version }}
