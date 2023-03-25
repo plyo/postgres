@@ -1,0 +1,36 @@
+name: DB-backup
+
+on:
+  workflow_dispatch: ~
+#  schedule:
+#    # * is a special character in YAML so you have to quote this string
+#    - cron:  '0 * * * *'
+
+jobs:
+  deploy:
+    name: Build sanitized DB dump into docker image
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up S3cmd cli tool
+        uses: s3-actions/s3cmd@v1.4.0
+        with:
+          provider: digitalocean
+          region: '${{ vars.S3_REGION }}'
+          access_key: ${{ secrets.S3_KEY }}
+          secret_key: ${{ secrets.S3_SECRET_KEY }}
+      - name: Fetch sanitized backup
+        run: |
+          s3cmd get s3://${{ vars.S3_BUCKET }}/latest.sanitized publisher/sanitized/latest.sanitized
+      - name: Login to registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ vars.REGISTRY }}
+          username: ${{ secrets.REGISTRY_USER }}
+          password: ${{ secrets.REGISTRY_PASS }}
+      - name: Build DB image
+        run: |
+          image="${{ vars.REGISTRY }}/db:data"
+          docker build -t ${image} -f ./publisher/Dockerfile ./publisher
+          docker push ${image}
+          

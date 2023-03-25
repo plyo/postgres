@@ -1,4 +1,4 @@
-publisher/docker-compose.override.yml
+publisher/sanitized
 database/test/actual
 backups/backups
 sanitizer/files
