@@ -2,8 +2,8 @@ ARG version=13.1
 
 FROM plyo/postgres:database-7.3.0-$version
 
-ENV S3_BACKUP_MNT_POINT /var/s3fs
-ENV S3_BACKUP_MNT_POINT /var/s3fs-sanitized
+ENV S3_BACKUP_MNT_POINT "/backups"
+ENV S3_SANITIZED_BACKUP_MNT_POINT "/sanitized"
 ENV S3_BUCKET_URL ""
 
 ARG S3FS_VERSION=v1.86
@@ -19,8 +19,8 @@ RUN git clone https://github.com/s3fs-fuse/s3fs-fuse.git; \
  rm -rf /var/cache/apk/*;
 
 VOLUME /files
-VOLUME /backups
-VOLUME /sanitized
+VOLUME $S3_BACKUP_MNT_POINT
+VOLUME $S3_SANITIZED_BACKUP_MNT_POINT
 
 WORKDIR /usr/src/app
 COPY ./src/* /usr/src/app/
