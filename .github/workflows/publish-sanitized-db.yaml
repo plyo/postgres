@@ -1,4 +1,4 @@
-name: DB-backup
+name: DB Docker Publisher
 
 on:
   workflow_dispatch: ~
