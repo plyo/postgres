@@ -7,4 +7,7 @@ This repo contains 3 docker images and 1 CI/CD workflow:
 3. [plyo/postgres:sanitizer-*](/sanitizer) - Service for sanitizing data from the backup for preparing development database backup.
 4. [CI/CD](/.github/workflows/publish-sanitized-db.yaml) to push sanitized database into docker image
 
+Components schema:
+![Components Overview](docs/plyo-database-flow.png)
+
 See all available [tags on Docker Hub](https://hub.docker.com/r/plyo/postgres/tags/) 
