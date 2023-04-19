@@ -12,7 +12,6 @@ while [[ ${db_config} ]]; do
     let "db_number += 1"
     eval "db_config=\$DB_CONFIG_${db_number}"
 done
-cat /root/.pgpass
 chmod 0600 /root/.pgpass
 
 # mount s3 volumes
