@@ -33,7 +33,7 @@ if [[ -f "${backup_roles_file}" ]]; then
     log "Copy from s3 to /files/${filename}"
     cp "${backup_roles_file}" "/files/${filename}"
   fi
-  log "Restoring "/files/${filename}"..."
+  log "Restoring '/files/${filename}'..."
   psql -f "${backup_roles_file}" -U postgres
   status=$?
   if [ "$status" != "0" ];
@@ -43,12 +43,23 @@ if [[ -f "${backup_roles_file}" ]]; then
   fi
 fi
 
-log "Restoring ${backup_roles_file}..."
+if [[ -f "${ROLES_FILE_PATH}" ]]; then
+  log "Restoring '${ROLES_FILE_PATH}'..."
+  psql -f "${backup_roles_file}" -U postgres
+  status=$?
+  if [ "$status" != "0" ];
+  then
+    echo "Cannot restore roles file"
+    exit 1
+  fi
+fi
+
 filename=$(basename -- "$backup_file")
 if [[ ! -f "/files/${filename}" ]]; then
   log "Copy from s3 to /files/${filename}"
   cp "${backup_file}" "/files/${filename}"
 fi
+log "Restoring '${backup_file}'..."
 log "pg_restore /files/${filename}"
 pg_restore "/files/${filename}" -U postgres -d ${DB_NAME}
 status=$?
