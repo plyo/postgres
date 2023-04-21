@@ -10,6 +10,7 @@ services:
       - PRIVATE_SCHEMA_NAME=public
       - SCHEMA_NAME=public
       - POSTGRES_PASSWORD=password
+#      - ROLES_FILE_PATH=/roles/roles.out
 
       - DB_NAME=plyo
       - DB_HOST=plyo-db
