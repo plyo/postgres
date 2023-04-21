@@ -45,7 +45,7 @@ fi
 
 if [[ -f "${ROLES_FILE_PATH}" ]]; then
   log "Restoring '${ROLES_FILE_PATH}'..."
-  psql -f "${backup_roles_file}" -U postgres
+  psql -f "${ROLES_FILE_PATH}" -U postgres
   status=$?
   if [ "$status" != "0" ];
   then
