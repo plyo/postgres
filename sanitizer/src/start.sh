@@ -23,7 +23,7 @@ backup_roles_file=${backup_file}_roles.out
 echo "starting postgres..."
 rm -rf "${PGDATA}"
 
-cat > /var/lib/postgresql/data/postgresql.conf <<EOL
+cat > /etc/postgresql/postgresql.conf <<EOL
 listen_addresses = '*'
 max_connections = 100
 shared_buffers = 128MB
@@ -46,7 +46,7 @@ autovacuum = off
 wal_buffers = 16MB
 EOL
 
-/usr/local/bin/docker-entrypoint.sh postgres &
+/usr/local/bin/docker-entrypoint.sh postgres -c 'config_file=/etc/postgresql/postgresql.conf' &
 
 until pg_isready -U postgres -h 0.0.0.0 -p 5432 ; do echo "waiting for postgres to start" && sleep 5 ; done
 
