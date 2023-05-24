@@ -61,7 +61,7 @@ if [[ ! -f "/files/${filename}" ]]; then
 fi
 log "Restoring '${backup_file}'..."
 log "pg_restore /files/${filename}"
-pg_restore "/files/${filename}" -U postgres -d ${DB_NAME}
+pg_restore "/files/${filename}" -U postgres -d ${DB_NAME} -v
 status=$?
 if [ "$status" != "0" ];
 then
