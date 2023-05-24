@@ -1,6 +1,6 @@
 ARG version=13.1
 
-FROM plyo/postgres:database-7.3.0-$version
+FROM plyo/postgres:database-8.0.0-$version
 
 ENV S3_BACKUP_MNT_POINT "/backups"
 ENV S3_SANITIZED_BACKUP_MNT_POINT "/sanitized"

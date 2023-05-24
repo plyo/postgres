@@ -22,6 +22,30 @@ backup_roles_file=${backup_file}_roles.out
 
 echo "starting postgres..."
 rm -rf "${PGDATA}"
+
+cat > /var/lib/postgresql/data/postgresql.conf <<EOL
+listen_addresses = '*'
+max_connections = 100
+shared_buffers = 128MB
+dynamic_shared_memory_type = posix
+max_wal_size = 1GB
+min_wal_size = 80MB
+log_timezone = 'UTC'
+lc_messages = 'en_US.utf8'
+lc_monetary = 'en_US.utf8'
+lc_numeric = 'en_US.utf8'
+lc_time = 'en_US.utf8'
+default_text_search_config = 'pg_catalog.english'
+
+#pg_restore tuning
+work_mem = 32MB
+shared_buffers = 512MB
+maintenance_work_mem = 1GB
+full_page_writes = off
+autovacuum = off
+wal_buffers = 16MB
+EOL
+
 /usr/local/bin/docker-entrypoint.sh postgres &
 
 until pg_isready -U postgres -h 0.0.0.0 -p 5432 ; do echo "waiting for postgres to start" && sleep 5 ; done
@@ -61,7 +85,7 @@ if [[ ! -f "/files/${filename}" ]]; then
 fi
 log "Restoring '${backup_file}'..."
 log "pg_restore /files/${filename}"
-pg_restore "/files/${filename}" -U postgres -d ${DB_NAME} -v
+pg_restore "/files/${filename}" -U postgres -d ${DB_NAME} --jobs=4 -v
 status=$?
 if [ "$status" != "0" ];
 then
