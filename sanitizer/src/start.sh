@@ -23,6 +23,7 @@ backup_roles_file=${backup_file}_roles.out
 echo "starting postgres..."
 rm -rf "${PGDATA}"
 
+mkdir -p /etc/postgresql
 cat > /etc/postgresql/postgresql.conf <<EOL
 listen_addresses = '*'
 max_connections = 100
