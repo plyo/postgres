@@ -122,8 +122,11 @@ fi
 mv "${sanitized_folder}/${sanitised_file}" "${sanitized_folder}/latest.sanitized"
 
 if [[ -f "$backup_roles_file" ]]; then
-    filename=$(basename -- "$backup_roles_file")
     cp "${backup_roles_file}" "${sanitized_folder}/latest_roles.out"
+fi
+
+if [[ -f "${ROLES_FILE_PATH}" ]]; then
+  cp "${ROLES_FILE_PATH}" "${sanitized_folder}/latest_roles.out"
 fi
 
 log "Finished"
