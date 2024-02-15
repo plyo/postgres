@@ -7,79 +7,79 @@ create schema sanitizing;
 -- - sanitize_value
 -- - sanitize_nullable
 -- - sanitize_jsonb
-create or replace function sanitizing.sanitize_email(_t varchar, _c varchar)
+create or replace function sanitizing.sanitize_email(_t varchar, _c varchar, _s varchar)
   returns void as
 $$
 declare
   affected numeric;
 begin
   execute format(
-    'with data as (
-      select
-        id,
-        string_agg(
-          right(md5(e), 8) || substring(e, ''@.+$'') || ''t'',
-          '',''
-          ) as sanitized
-      from %1$I, unnest(regexp_split_to_array(%2$I, '','')) e
-      group by id
-    )
-    update %1$I
-    set %2$I = case when sanitized isnull then ''emailNotValid@plyo.io'' else sanitized end
-    from data
-    where data.id = %1$I.id;', _t, _c);
+          'with data as (
+                     select
+                       id,
+                       string_agg(
+                         right(md5(e), 8) || substring(e, ''@.+$'') || ''t'',
+                         '',''
+                         ) as sanitized
+                     from %3$I.%1$I, unnest(regexp_split_to_array(%2$I, '','')) e
+                     group by id
+                   )
+                   update %3$I.%1$I
+                   set %2$I = case when sanitized isnull then ''emailNotValid@plyo.io'' else sanitized end
+                   from data
+                   where data.id = %3$I.%1$I.id;', _t, _c, _s);
   get diagnostics affected = row_count;
   raise notice '%.% is sanitized: % rows affected', _t, _c, affected;
 end
 $$
 language plpgsql;
 
-create or replace function sanitizing.sanitize_phone(_t varchar, _c varchar)
+create or replace function sanitizing.sanitize_phone(_t varchar, _c varchar, _s varchar)
   returns void as
 $$
 declare
   affected numeric;
 begin
-  execute format('update %1$I set %2$I = ''93000000'' where %2$I is not null;', _t, _c);
+  execute format('update %3$I.%1$I set %2$I = ''93000000'' where %2$I is not null;', _t, _c, _s);
   get diagnostics affected = row_count;
   raise notice '%.% is sanitized: % rows affected', _t, _c, affected;
 end
 $$
 language plpgsql;
 
-create or replace function sanitizing.sanitize_value(_t varchar, _c varchar)
+create or replace function sanitizing.sanitize_value(_t varchar, _c varchar, _s varchar)
   returns void as
 $$
 declare
   affected numeric;
 begin
-  execute format('update %1$I set %2$I = right(md5(%2$I), 12);', _t, _c);
+  execute format('update %3$I.%1$I set %2$I = right(md5(%2$I), 12);', _t, _c, _s);
   get diagnostics affected = row_count;
   raise notice '%.% is sanitized: % rows affected', _t, _c, affected;
 end
 $$
 language plpgsql;
 
-create or replace function sanitizing.sanitize_nullable(_t varchar, _c varchar)
+create or replace function sanitizing.sanitize_nullable(_t varchar, _c varchar, _s varchar)
   returns void as
 $$
 declare
   affected numeric;
 begin
-  execute format('update %I set %I = null;', _t, _c);
+  execute format('update %I.%I set %I = null;', _s, _t, _c);
   get diagnostics affected = row_count;
   raise notice '%.% is sanitized: % rows affected', _t, _c, affected;
 end
 $$
 language plpgsql;
 
-create or replace function sanitizing.sanitize_as_empty_jsonb(_t varchar, _c varchar)
+create or replace function sanitizing.sanitize_as_empty_jsonb(_t varchar, _c varchar, _s varchar)
   returns void as
 $$
 declare
   affected numeric;
 begin
-  execute format('update %I set %I = ''{}''::jsonb;', _t, _c);
+  execute format('update %I.%I set %I = ''{}''::jsonb;', _s, _t, _c);
   get diagnostics affected = row_count;
   raise notice '%.% is sanitized: % rows affected', _t, _c, affected;
 end
@@ -117,13 +117,13 @@ end
 $$
   language plpgsql;
 
-create or replace function sanitizing.sanitize_jsonb(_t varchar, _c varchar)
+create or replace function sanitizing.sanitize_jsonb(_t varchar, _c varchar, _s varchar)
   returns void as
 $$
 declare
   affected numeric;
 begin
-  execute format('update %I set %I = sanitizing.get_sanitized_jsonb(%I);', _t, _c, _c);
+  execute format('update %I.%I set %I = sanitizing.get_sanitized_jsonb(%I);', _s, _t, _c, _c);
   get diagnostics affected = row_count;
   raise notice '%.% is sanitized: % rows affected', _t, _c, affected;
 end
@@ -145,18 +145,22 @@ from pg_catalog.pg_statio_all_tables as st
 -- truncate table which are not needed for the development before the sanitizing (logs, emails etc);
 -- a table must have 'TRUNCATE_ON_SANITIZE' comment
 do $$
-  declare t text;
-  begin
-    for t in select relname from pg_class
-             where relkind = 'r' and obj_description(oid) = 'TRUNCATE_ON_SANITIZE' loop
-        execute 'truncate table ' || quote_ident(t) || ' cascade'; -- cascade to drop formDataImages etc
-      end loop;
-  end
+    declare r record;
+    begin
+        for r in select nspname, relname
+                 from pg_class
+                          join pg_namespace on pg_namespace.oid = pg_class.relnamespace
+                          join pg_description on pg_class.oid = pg_description.objoid
+                 where pg_description.description = 'TRUNCATE_ON_SANITIZE' and pg_class.relkind = 'r' loop
+                execute format('truncate table %I.%I cascade', r.nspname, r.relname); -- cascade to drop formDataImages etc
+            end loop;
+    end
 $$;
 
 -- call sanitize_email on every column containing SANITIZE_AS_EMAIL in the comment
-select sanitizing.sanitize_email(res.table_name :: varchar, res.column_name :: varchar)
+select sanitizing.sanitize_email(res.table_name :: varchar, res.column_name :: varchar, res.table_schema :: varchar)
 from (select
+        c.table_schema,
         c.table_name,
         c.column_name
       from pg_catalog.pg_statio_all_tables as st
@@ -166,8 +170,9 @@ from (select
       where pgd.description ilike '%SANITIZE_AS_EMAIL%') as res;
 
 -- call sanitize_value on every column containing SANITIZE_AS_VALUE in the comment
-select sanitizing.sanitize_value(res.table_name :: varchar, res.column_name :: varchar)
+select sanitizing.sanitize_value(res.table_name :: varchar, res.column_name :: varchar, res.table_schema :: varchar)
 from (select
+        c.table_schema,
         c.table_name,
         c.column_name
       from pg_catalog.pg_statio_all_tables as st
@@ -177,8 +182,9 @@ from (select
       where pgd.description ilike '%SANITIZE_AS_VALUE%') as res;
 
 -- call sanitize_phone on every column containing SANITIZE_AS_PHONE in the comment
-select sanitizing.sanitize_phone(res.table_name :: varchar, res.column_name :: varchar)
+select sanitizing.sanitize_phone(res.table_name :: varchar, res.column_name :: varchar, res.table_schema :: varchar)
 from (select
+        c.table_schema,
         c.table_name,
         c.column_name
       from pg_catalog.pg_statio_all_tables as st
@@ -188,8 +194,9 @@ from (select
       where pgd.description ilike '%SANITIZE_AS_PHONE%') as res;
 
 -- call sanitize_nullable on every column containing SANITIZE_AS_NULLABLE in the comment
-select sanitizing.sanitize_nullable(res.table_name :: varchar, res.column_name :: varchar)
+select sanitizing.sanitize_nullable(res.table_name :: varchar, res.column_name :: varchar, res.table_schema :: varchar)
 from (select
+        c.table_schema,
         c.table_name,
         c.column_name
       from pg_catalog.pg_statio_all_tables as st
@@ -199,8 +206,9 @@ from (select
       where pgd.description ilike '%SANITIZE_AS_NULLABLE%') as res;
 
 -- call sanitize_jsonb on every column containing SANITIZE_AS_JSONB in the comment
-select sanitizing.sanitize_jsonb(res.table_name :: varchar, res.column_name :: varchar)
+select sanitizing.sanitize_jsonb(res.table_name :: varchar, res.column_name :: varchar, res.table_schema :: varchar)
 from (select
+        c.table_schema,
         c.table_name,
         c.column_name
       from pg_catalog.pg_statio_all_tables as st
@@ -210,8 +218,9 @@ from (select
       where pgd.description ilike '%SANITIZE_AS_JSONB%') as res;
 
 -- call sanitize_as_empty_jsonb on every column containing SANITIZE_AS_EMPTY_JSONB in the comment
-select sanitizing.sanitize_as_empty_jsonb(res.table_name :: varchar, res.column_name :: varchar)
+select sanitizing.sanitize_as_empty_jsonb(res.table_name :: varchar, res.column_name :: varchar, res.table_schema :: varchar)
 from (select
+        c.table_schema,
         c.table_name,
         c.column_name
       from pg_catalog.pg_statio_all_tables as st
