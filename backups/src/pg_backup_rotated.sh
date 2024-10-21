@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # see https://wiki.postgresql.org/wiki/Automated_Backup_on_Linux
+BACKUP_TMP_DIR=${BACKUP_TMP_DIR:-/tmp}
 
 log () {
   echo "[pg_backup_rotated.sh]> $@"
@@ -17,7 +18,9 @@ function perform_backups()
 
     backup_date=`date +%Y-%m-%d`
     backup_file_path="${BACKUP_DIR}${backup_date}${suffix}".backup
+    backup_progress_file_path="${BACKUP_TMP_DIR}${backup_date}${suffix}".backup
     backup_roles_file_path="${backup_file_path}_roles.out"
+    backup_progress_roles_file_path="${backup_progress_file_path}_roles.out"
 
     if [[ -e ${backup_file_path} ]]; then
         log "${backup_file_path} already exists, skipping dump"
@@ -26,19 +29,19 @@ function perform_backups()
 
     log "Dumping custom backup for ${DB_NAME} database to ${backup_file_path}"
 
-    if ! pg_dump -Fc -h "$db_host" -p "$db_port" -U "$db_user" ${DB_NAME} -f ${backup_file_path}.in_progress; then
+    if ! pg_dump -Fc -h "$db_host" -p "$db_port" -U "$db_user" ${DB_NAME} -f ${backup_progress_file_path}.in_progress; then
         log "[ERROR] Failed to produce custom backup database ${DB_NAME}"
         exit 1
     else
         # finalize database backup
-        mv ${backup_file_path}.in_progress ${backup_file_path}
+        mv ${backup_progress_file_path}.in_progress ${backup_file_path}
 
         # perform backup of database roles
         if [[ "${PERFORM_BACKUP_ROLES}" == "1" ]]; then
           log "Dumping roles backup for ${DB_NAME} database to ${backup_roles_file_path}"
-          pg_dumpall -r -h "$db_host" -p "$db_port" -U postgres -f ${backup_roles_file_path}.in_progress
-          cat ${backup_roles_file_path}.in_progress | grep -v ${IGNORE_DUMP_ROLES} > "${backup_roles_file_path}"
-          rm -f ${backup_roles_file_path}.in_progress
+          pg_dumpall -r -h "$db_host" -p "$db_port" -U postgres -f ${backup_progress_roles_file_path}.in_progress
+          cat ${backup_progress_roles_file_path}.in_progress | grep -v ${IGNORE_DUMP_ROLES} > "${backup_roles_file_path}"
+          rm -f ${backup_progress_roles_file_path}.in_progress
         fi
 
         # perform copy backup to S3-compatible storage

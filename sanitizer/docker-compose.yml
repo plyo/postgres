@@ -4,27 +4,8 @@ services:
     build:
       context: .
     working_dir: /usr/src/app
-    environment:
-      - ADMIN_ROLE_NAME=plyo
-      - EXTENSIONS=pgcrypto,ltree
-      - PRIVATE_SCHEMA_NAME=public
-      - SCHEMA_NAME=public
-      - POSTGRES_PASSWORD=password
-#      - ROLES_FILE_PATH=/roles/roles.out
-
-      - DB_NAME=plyo
-      - DB_HOST=plyo-db
-
-      - S3_KEY=*
-      - S3_SECRET_KEY=*
-
-      - S3_BUCKET=plyo-db-backups-prod
-      - S3_BUCKET_URL=https://fra1.digitaloceanspaces.com
-      - S3_BACKUP_MNT_POINT=/backups
-
-      - S3_SANITIZED_BUCKET=plyo-db-sanitized-prod
-      - S3_SANITIZED_BUCKET_URL=https://fra1.digitaloceanspaces.com
-      - S3_SANITIZED_BACKUP_MNT_POINT=/sanitized
+    env_file:
+      - .env
     volumes:
       - ./src/start.sh:/usr/src/app/start.sh
       - ./src/mount-s3.sh:/usr/src/app/mount-s3.sh

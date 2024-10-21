@@ -2,3 +2,4 @@ publisher/sanitized
 database/test/actual
 backups/backups
 sanitizer/files
+.env
