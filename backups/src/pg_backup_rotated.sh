@@ -17,10 +17,12 @@ function perform_backups()
     local db_user=$4
 
     backup_date=`date +%Y-%m-%d`
-    backup_file_path="${BACKUP_DIR}${backup_date}${suffix}".backup
+    backup_file_path="${BACKUP_DIR}${db_host}/${backup_date}${suffix}".backup
     backup_progress_file_path="${BACKUP_TMP_DIR}${backup_date}${suffix}".backup
     backup_roles_file_path="${backup_file_path}_roles.out"
     backup_progress_roles_file_path="${backup_progress_file_path}_roles.out"
+
+    mkdir -p "$(dirname "${backup_file_path}")"
 
     if [[ -e ${backup_file_path} ]]; then
         log "${backup_file_path} already exists, skipping dump"
