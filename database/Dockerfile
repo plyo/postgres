@@ -1,4 +1,4 @@
-ARG version=13.1
+ARG version=14.1
 
 FROM postgres:${version}-alpine as db
 COPY docker-entrypoint-initdb.d/* /docker-entrypoint-initdb.d/

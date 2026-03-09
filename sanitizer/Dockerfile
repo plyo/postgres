@@ -1,4 +1,4 @@
-ARG version=13.1
+ARG version=14.1
 
 FROM plyo/postgres:database-8.0.0-$version
 
